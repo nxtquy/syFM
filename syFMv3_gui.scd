@@ -379,8 +379,6 @@ MIDIdef.cc(\ccnoteon, {arg valcc, numcc, chancc, srccc;
 	;
 });
 
-
-
 //Release note will release synth node
 ~noteOffFunc = {arg val, num, chan, src;
 	var node;
@@ -391,6 +389,9 @@ MIDIdef.cc(\ccnoteon, {arg valcc, numcc, chancc, srccc;
 	});
 
 };
+
+
+
 MIDIdef.noteOff(\off, ~noteOffFunc);
 
 /*~ccOnFunc = {arg val, num, chan, src;
@@ -408,6 +409,15 @@ MIDIdef.noteOff(\off, ~noteOffFunc);
 MIDIdef.cc(\ccOn, ~ccOnFunc);*/
 
 )
+
+
+
+
+
+
+
+
+
 
 
 //Print CCs and notes
