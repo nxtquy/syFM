@@ -1,12 +1,34 @@
 
 
 (
-SynthDef(\sinpk, { arg freq = 440, gate = 1;
+SynthDef(\sinpk, { arg freq = 220, gate = 1;
     var x;
-    x = SinOsc.ar(freq, 0, 0.1) + PinkNoise.ar(0.01);
-    x = EnvGen.kr(Env.asr, gate, doneAction: 2) * x;
+	var zx;
+	var y;
+    //x = SinOsc.ar(freq, 0, 1) + PinkNoise.ar(0.01);
+
+/*	x = SinOsc.ar(freq, 0,1) + (1/3)*SinOsc.ar(3*freq, 0,1) + (1/5)*SinOsc.ar(5*freq, 0,1)  + (1/7)*SinOsc.ar(7*freq, 0,1) +
+	(1/9)*SinOsc.ar(9*freq, 0,1) + (1/11)*SinOsc.ar(11*freq, 0,1) ;*/
+
+	var fm = 220;
+	var fc = 440;
+
+	var ind = 2pi/6;
+
+	y = SinOsc.ar(freq,0,1);
+	zx = SinOsc.ar(fm,0, fm*ind, fc);
+	x = SinOsc.ar(zx, 0,1,0);
+	x = SinOsc.ar(zx,0,0.5,1,0);
+
+	//x = LFPulse.ar(zx, 0,0.5, min(1/440*100, 1/fm * 50),0);
+	//y = LFSaw.ar(440,0,1,0);
+
+    //x = EnvGen.kr(Env.asr, gate, doneAction: 2) * x;
+
+	//x = SinOsc.ar(440, SinOsc.ar(440,0,2*pi/4),1,0);
+
 	Out.ar(0, Pan2.ar(x));
-}).add;
+}).play;
 )
 
 (
@@ -60,7 +82,7 @@ SynthDef.new(\sinpk, { arg freq = 440;
 
 
 { [SinOsc.ar(440, 0, 0.2), SinOsc.ar(442, 0, 0.2)] }.play;
-{ Pan2.ar(PMOsc.ar(MouseX.kr(300,900), 600, 3, 0, 0.1)) }.play; // modulate carfreq
+{ Pan2.ar(LFPulse.ar(440*(1-0.1*SinOsc.ar(440,0,1)), 0, 0.5, 1, 0.1)) }.play; // modulate carfreq
 
 (
 {
