@@ -133,7 +133,7 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 
 
 //MIDI CC to change notesynth parameters live
-MIDIdef.cc(\ccnoteon, {arg valcc, numcc, chancc, srccc;
+~ccOnFunc = {arg valcc, numcc, chancc, srccc;
 
 	case
 
@@ -385,7 +385,7 @@ MIDIdef.cc(\ccnoteon, {arg valcc, numcc, chancc, srccc;
 	//
 
 	;
-});
+};
 
 //Release note will release synth node
 ~noteOffFunc = {arg val, num, chan, src;
@@ -410,9 +410,9 @@ MIDIdef.noteOff(\off, ~noteOffFunc);
 
 	ccs.put(num, node);
 	[src,chan, num, val].postln;
-};
+};*/
 
-MIDIdef.cc(\ccOn, ~ccOnFunc);*/
+MIDIdef.cc(\ccOn, ~ccOnFunc);
 
 )
 
@@ -425,9 +425,8 @@ MIDIdef.cc(\ccOn, ~ccOnFunc);*/
 var w;
 var k1, k2;
 var s1, s2;
-var b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12;
-var b13, b14, b15, b16, b17, b18, b19, b20, b21, b22, b23, b24;
-var b25, b26, b27, b28, b29, b30;
+var knobArray;
+var knobP;
 var buttonArray;
 var whiteKeys;
 var blackKeys;
@@ -438,26 +437,61 @@ var s2text;
 //Keyboard location
 var o1s = 150; //X location
 var o2s = 210+o1s;
-var kY = 300; // Y location
+var kY = 600; // Y location
 var add = 0;
 
+//Knobs location
+var knbX = 50;
+var knbY = 10;
 
-w= Window("testgui",Rect(100,300,1000,500));
 
-k1= Knob(w,Rect(110,50,80,80))
+w= Window("testgui",Rect(100,300,1000,800));
+
+
+//KNOB GUI
+
+knobArray = Array.newClear(100);
+knobP = Array.with(
+	'WAV1','FINE1','COARSE1','PK1','ATK1','DEC1','SUS1','REL1',
+	'WAV2','FINE2','COARSE2','PK2','ATK2','DEC2','SUS2','REL2',
+	'ALG','NOISE','MIX1','MIX2','FILTER','RES','ANLGFAC','MASTER',
+
+
+);
+
+
+knobP.do( {arg item, i;
+	var num = i.mod(8)+21;
+	var chan = floor(i/8);
+
+	knobArray[i] =Knob(w, Rect((knbX+(90*i.mod(8))),(knbY +(90*floor(i/8))),70,70))
+	.keyDownAction_({})
+	.action={~ccOnFunc.value(127*knobArray[i].value,num,chan,0)};
+
+
+	TextField(knobArray[i],Rect(5, 55, 60, 15))
+	.value = item;
+
+});
+
+/*k1= Knob(w,Rect(110,50,80,80))
 .keyDownAction_({})
-.action={(127*k1.value).postln}
-;
+.action={~ccOnFunc.value(127*k1.value,21,0,0);}
+;*/
 
-s1 = Slider(w,Rect(250,50,20,80))
+
+
+/*s1 = Slider(w,Rect(250,50,20,80))
 .keyDownAction_({})
 .action = {(127*s1.value).postln}
-;
+;*/
 
-s2 = Slider(w,Rect(100,kY,20,80))
+
+
+s2 = Slider(w,Rect(100,kY,20,120))
 .keyDownAction_({})
 .action = {
-	oct = floor(6*s2.value);
+	oct = floor(10*s2.value);
 	s2text.value = oct}
 ;
 s2text = TextField(s2, Rect(0, 0, 20, 20));
@@ -477,6 +511,7 @@ whiteKeys.do({arg item, i;
 		case
 		{b.value== 1} {
 			~noteOnFunc.value(100, item+(oct*12), 0, 0);
+			//(item+(oct*12)).postln;
 		}
 		{b.value == 0} {~noteOffFunc.value(0, item+(oct*12), 0, 0)};
 	});
@@ -497,6 +532,7 @@ blackKeys.do({arg item, i;
 		case
 		{b.value== 1} {
 			~noteOnFunc.value(100, item+(oct*12), 0, 0);
+			//(item+(oct*12)).postln;
 		}
 		{b.value == 0} {~noteOffFunc.value(0, item+(oct*12), 0, 0)};
 	});
@@ -505,41 +541,45 @@ blackKeys.do({arg item, i;
 
 //Use computer keyboard to send commands
 w.view.keyDownAction = { arg view, char, modifiers, unicode, keycode;
-	//[char, modifiers, unicode, keycode].postln;
+	[char, modifiers, unicode, keycode].postln;
 	case
-	{keycode == 6 && buttonArray[0].value == 0} {buttonArray[0].valueAction = 1}
-	{keycode == 1 && buttonArray[1].value == 0} {buttonArray[1].valueAction = 1}
-	{keycode == 7 && buttonArray[2].value == 0} {buttonArray[2].valueAction = 1}
-	{keycode == 2 && buttonArray[3].value == 0} {buttonArray[3].valueAction = 1}
-	{keycode == 8 && buttonArray[4].value == 0} {buttonArray[4].valueAction = 1}
-	{keycode == 9 && buttonArray[5].value == 0} {buttonArray[5].valueAction = 1}
-	{keycode == 5 && buttonArray[6].value == 0} {buttonArray[6].valueAction = 1}
-	{keycode == 11 && buttonArray[7].value == 0} {buttonArray[7].valueAction = 1}
-	{keycode == 4 && buttonArray[8].value == 0} {buttonArray[8].valueAction = 1}
-	{keycode == 45 && buttonArray[9].value == 0} {buttonArray[9].valueAction = 1}
-	{keycode == 38 && buttonArray[10].value == 0} {buttonArray[10].valueAction = 1}
-	{keycode == 46 && buttonArray[11].value == 0} {buttonArray[11].valueAction = 1}
-	{keycode == 43 && buttonArray[12].value == 0} {buttonArray[12].valueAction = 1}
+	{unicode == 122 && buttonArray[0].value == 0} {buttonArray[0].valueAction = 1}
+	{unicode == 115 && buttonArray[1].value == 0} {buttonArray[1].valueAction = 1}
+	{unicode == 120 && buttonArray[2].value == 0} {buttonArray[2].valueAction = 1}
+	{unicode == 100 && buttonArray[3].value == 0} {buttonArray[3].valueAction = 1}
+	{unicode == 99 && buttonArray[4].value == 0} {buttonArray[4].valueAction = 1}
+	{unicode == 118 && buttonArray[5].value == 0} {buttonArray[5].valueAction = 1}
+	{unicode == 103 && buttonArray[6].value == 0} {buttonArray[6].valueAction = 1}
+	{unicode == 98 && buttonArray[7].value == 0} {buttonArray[7].valueAction = 1}
+	{unicode == 104 && buttonArray[8].value == 0} {buttonArray[8].valueAction = 1}
+	{unicode == 110 && buttonArray[9].value == 0} {buttonArray[9].valueAction = 1}
+	{unicode == 106 && buttonArray[10].value == 0} {buttonArray[10].valueAction = 1}
+	{unicode == 109 && buttonArray[11].value == 0} {buttonArray[11].valueAction = 1}
+	{unicode == 44 && buttonArray[12].value == 0} {buttonArray[12].valueAction = 1}
 
-	{keycode == 12 && buttonArray[12].value == 0} {buttonArray[12].valueAction = 1}
-	{keycode == 19 && buttonArray[13].value == 0} {buttonArray[13].valueAction = 1}
-	{keycode == 13 && buttonArray[14].value == 0} {buttonArray[14].valueAction = 1}
-	{keycode == 20 && buttonArray[15].value == 0} {buttonArray[15].valueAction = 1}
-	{keycode == 14 && buttonArray[16].value == 0} {buttonArray[16].valueAction = 1}
-	{keycode == 15 && buttonArray[17].value == 0} {buttonArray[17].valueAction = 1}
-	{keycode == 23 && buttonArray[18].value == 0} {buttonArray[18].valueAction = 1}
-	{keycode == 17 && buttonArray[19].value == 0} {buttonArray[19].valueAction = 1}
-	{keycode == 22 && buttonArray[20].value == 0} {buttonArray[20].valueAction = 1}
-	{keycode == 16 && buttonArray[21].value == 0} {buttonArray[21].valueAction = 1}
-	{keycode == 26 && buttonArray[22].value == 0} {buttonArray[22].valueAction = 1}
-	{keycode == 32 && buttonArray[23].value == 0} {buttonArray[23].valueAction = 1}
-	{keycode == 34 && buttonArray[24].value == 0} {buttonArray[24].valueAction = 1}
+	{unicode == 113 && buttonArray[12].value == 0} {buttonArray[12].valueAction = 1}
+	{unicode == 50 && buttonArray[13].value == 0} {buttonArray[13].valueAction = 1}
+	{unicode == 119 && buttonArray[14].value == 0} {buttonArray[14].valueAction = 1}
+	{unicode == 51 && buttonArray[15].value == 0} {buttonArray[15].valueAction = 1}
+	{unicode == 101 && buttonArray[16].value == 0} {buttonArray[16].valueAction = 1}
+	{unicode == 114 && buttonArray[17].value == 0} {buttonArray[17].valueAction = 1}
+	{unicode == 53 && buttonArray[18].value == 0} {buttonArray[18].valueAction = 1}
+	{unicode == 116 && buttonArray[19].value == 0} {buttonArray[19].valueAction = 1}
+	{unicode == 54 && buttonArray[20].value == 0} {buttonArray[20].valueAction = 1}
+	{unicode == 121 && buttonArray[21].value == 0} {buttonArray[21].valueAction = 1}
+	{unicode == 55 && buttonArray[22].value == 0} {buttonArray[22].valueAction = 1}
+	{unicode == 117 && buttonArray[23].value == 0} {buttonArray[23].valueAction = 1}
+	{unicode == 105 && buttonArray[24].value == 0} {buttonArray[24].valueAction = 1}
 
-	{keycode == 25 && buttonArray[25].value == 0} {buttonArray[25].valueAction = 1}
-	{keycode == 31 && buttonArray[26].value == 0} {buttonArray[26].valueAction = 1}
-	{keycode == 29 && buttonArray[27].value == 0} {buttonArray[27].valueAction = 1}
-	{keycode == 35 && buttonArray[28].value == 0} {buttonArray[28].valueAction = 1};
+	{unicode == 57 && buttonArray[25].value == 0} {buttonArray[25].valueAction = 1}
+	{unicode == 111 && buttonArray[26].value == 0} {buttonArray[26].valueAction = 1}
+	{unicode == 48 && buttonArray[27].value == 0} {buttonArray[27].valueAction = 1}
+	{unicode== 112 && buttonArray[28].value == 0} {buttonArray[28].valueAction = 1}
+	{unicode == 47} {oct = oct + 1; s2text.value=oct}
+	{unicode == 46} {oct = oct - 1; s2text.value = oct};
+
 };
+
 
 w.view.keyUpAction = { arg view, char, modifiers, unicode, keycode;
 	case
