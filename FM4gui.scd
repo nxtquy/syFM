@@ -32,6 +32,7 @@ knobP = Array.with(
 	'WAV1','FINE1','COARSE1','PK1','ATK1','DEC1','SUS1','REL1',
 	'WAV2','FINE2','COARSE2','PK2','ATK2','DEC2','SUS2','REL2',
 	'ALG','NOISE','MIX1','MIX2','FILTER','RES','ANLGFAC','MASTER',
+	'DDEL','DDEC','RDEL','RDEC','RWET'
 
 
 );

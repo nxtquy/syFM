@@ -50,7 +50,8 @@ SynthDef(\sinpk, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, attack1 = 0.01
 	//x = BLowPass.ar(x, filterFreq, filterRes);
 
 	//master volume and clip limit
-	out = master*(vel/127)*Pan2.ar(x);
+	x = LeakDC.ar(x,0.995,1,0);
+	out = master*(vel/127)*x;
 	Out.ar(0, out);
 
 }).add;
@@ -78,12 +79,89 @@ SynthDef(\sinpk2, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, attack1 = 0.0
 	x = x + PinkNoise.ar(noise/10);
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
 
-	x = x + y;
+	x = (0.5*x) + (0.5*y);
 	//x = BLowPass.ar(x, filterFreq, filterRes);
 
-	out = master*(vel/127)*Pan2.ar(x);
+	x = LeakDC.ar(x,0.995,1,0);
+	out = master*(vel/127)*x;
 	Out.ar(0, out);
 
+}).add;
+
+
+  /////////////////////////////////
+ //       LOWPASS FILTER        //
+/////////////////////////////////
+
+SynthDef(\lowpass, {arg freq = 1000, amount = 0, rate = 5, res = 1;
+  var input, effect, sine;
+
+  sine = SinOsc.kr(rate,0,amount,1); // LFO
+
+  input = In.ar(0,1);
+  effect = LPF.ar(input, Lag.kr((sine)*freq,1)); // Apply LFO and smooth
+
+  ReplaceOut.ar(0,effect); // Replace output
+}).add;
+
+
+
+  /////////////////////////////////
+ //           DELAY             //
+/////////////////////////////////
+
+SynthDef(\delay, {arg del = 0.001, dec = 0.01 ;
+  var input, effect;
+
+  input= In.ar(0,1); //get two channels of input starting (and ending) on bus 0
+
+  // Add some smoothing to both the decay and delay time control
+  effect = DelayN.ar(input, 1, Lag.kr(del, 2), Lag.kr(dec, 0.09)); // Max delay of one second
+
+  Out.ar(0,effect); // Add to output
+}).add;
+
+
+  /////////////////////////////////
+ //           REVERB            //
+/////////////////////////////////
+SynthDef(\reverb, {arg del=0.01, dec=1, wet = 0;
+	var input;
+	var numc,numa,temp, env;
+
+	input=In.ar(0,1); //get two channels of input starting (and ending) on bus 0
+
+	numc = 4; // number of comb delays
+	numa = 6; // number of allpass delays
+
+	// reverb predelay time :
+	temp = DelayN.ar(input, 0.048,0.048);
+
+	temp=Mix.fill(numc,{CombL.ar(temp,0.1,rrand(0.01, 0.1),5)});
+
+	// chain of 4 allpass delays on each of two channels (8 total) :
+	numa.do({ temp = AllpassN.ar(temp, 0.051, [rrand(0.01, 0.05),rrand(0.01, 0.05)], 1) });
+	temp = 0.2*temp*wet;
+
+	//temp = FreeVerb.ar(input, wet, del, dec, 1, 0);
+
+	// add original sound to reverb and play it :
+	Out.ar(0,(temp));
+}).add;
+
+  /////////////////////////////////
+ //       FINAL LIMITER         //
+/////////////////////////////////
+
+SynthDef(\limiter, {arg gain = 1;
+  var input, effect;
+
+  input = In.ar(0,1); //get first channel on bus 0
+  // Note the exclamation mark followed by 2 makes
+  // the the final output stereo
+  effect = Limiter.ar((gain*input), 0.9, 0.01 ! 2); // Apply gain
+
+  ReplaceOut.ar(0,effect); // Replace output
 }).add;
 
 )
@@ -103,15 +181,29 @@ var ratio1 = 1, coarse1 = 0, peakLevel1 = 1, mix1=5, attack1=0.01, decay1 = 0.3,
 var ratio2 = 1, coarse2 = 0, peakLevel2 = 1, mix2=5, attack2=0.01, decay2 = 0.3, sustain2=0.5, release2=0.5;
 var noise = 0, wave1 = 0, wave2 = 0, filterFreq = 20000, filterRes = 1, master = 0.5, analogFac = 0;
 var algorithm = 1;
+var lfoRate = 0.5, lfoAmount = 0;
+var ddec = 0.01, ddel = 0.001;
+var rdec = 1, rdel = 0.01, rwet = 0;
+
 
 var ccres = 127;
 var aF = 1;
+
+var lp, de, li, re;
 
 var synthN = \sinpk;
 var keys;
 var ccs;
 keys = Array.newClear(128);
 ccs = Array.newClear(128);
+
+
+//Effects to add
+g = Group.basicNew(s,1);
+lp = Synth.tail(g, \lowpass);
+de = Synth.tail(g, \delay);
+re = Synth.tail(g, \reverb);
+li = Synth.tail(g, \limiter);
 
 ~noteOnFunc = {arg val, num, chan, src;
 	var node;
@@ -127,7 +219,7 @@ ccs = Array.newClear(128);
 	{algorithm == 1} {synthN =\sinpk}
 	{algorithm == 2} {synthN = \sinpk2};
 
-	node = Synth(synthN, [\freq, num.midicps, \vel, val, \ratio1, ratio1, \coarse1, coarse1, \ratio2, ratio2, \coarse2, coarse2, \mix1, mix1, \peakLevel1, peakLevel1, \attack1, attack1, \decay1, decay1, \sustain1, sustain1, \release1, release1, \mix2, mix2, \peakLevel2, peakLevel2, \attack2, attack2, \decay2, decay2, \sustain2, sustain2, \release2, release2, \wave1, wave1, \wave2, wave2, \noise, noise, \filterFreq, filterFreq, \filterRes, filterRes, \master, master, \aF, aF]);
+	node = Synth.head(g,synthN, [\freq, num.midicps, \vel, val, \ratio1, ratio1, \coarse1, coarse1, \ratio2, ratio2, \coarse2, coarse2, \mix1, mix1, \peakLevel1, peakLevel1, \attack1, attack1, \decay1, decay1, \sustain1, sustain1, \release1, release1, \mix2, mix2, \peakLevel2, peakLevel2, \attack2, attack2, \decay2, decay2, \sustain2, sustain2, \release2, release2, \wave1, wave1, \wave2, wave2, \noise, noise, \filterFreq, filterFreq, \filterRes, filterRes, \master, master, \aF, aF]);
 
 
 	keys.put(num, node);
@@ -347,14 +439,15 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 	{numcc == 25 && chancc == 2} {
 		filterFreq = 20000*(valcc/127);
 		case
-		{valcc < 42} {filterFreq = 100*valcc/42+0}
-		{valcc < 85} {filterFreq = 900*((valcc-42)/42)+100}
-		{valcc < 128} {filterFreq = 19000*((valcc-84)/43)+1000};
+		{valcc < 42} {filterFreq = (100*valcc/42)+50}
+		{valcc < 85} {filterFreq = (850*((valcc-42)/42))+150}
+		{valcc < 128} {filterFreq = 17000*((valcc-84)/43)+1000};
 
 		for (0, 127, {arg i;
 			keys[i].set(\filterFreq, filterFreq+20);
 		}
 		);
+		lp.set(\freq,filterFreq);
 		('filterFreq: ').post; filterFreq.postln;
 	}
 
@@ -368,6 +461,7 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 			keys[i].set(\filterRes, filterRes);
 		}
 		);
+		lp.set(\res, filterRes);
 		('filterRes: ').post; filterRes.postln;
 	}
 
@@ -385,6 +479,41 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 		}
 		);
 		('master: ').post; master.postln;
+	}
+	//
+
+	//BANK 4: EFFECTS
+
+	{numcc == 21 && chancc == 3} {
+		ddel = (valcc/127);
+		de.set(\del, ddel);
+		('ddel: ').post; ddel.postln;
+	}
+
+
+	{numcc == 22 && chancc == 3} {
+		ddec = (valcc/127);
+		de.set(\dec, ddec);
+		('ddec: ').post; ddec.postln;
+	}
+
+	{numcc == 23 && chancc == 3} {
+		rdel = (valcc/127);
+		re.set(\del, rdel);
+		('rdel: ').post; rdel.postln;
+	}
+
+
+	{numcc == 24 && chancc == 3} {
+		rdec = (valcc/127);
+		re.set(\dec, rdec);
+		('rdec: ').post; rdec.postln;
+	}
+
+	{numcc == 25 && chancc == 3} {
+		rwet = (valcc/127);
+		re.set(\wet, rwet);
+		('rwet: ').post; rwet.postln;
 	}
 	//
 
