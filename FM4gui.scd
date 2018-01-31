@@ -1,15 +1,14 @@
 //-----------------------------DIRECT GUI CONTROL ------------------------------//
 (
 var w;
-var k1, k2;
-var s1, s2;
+var s2;
 var knobArray;
 var knobP;
 var buttonArray;
 var whiteKeys;
 var blackKeys;
 
-var oct = 4;
+var oct = 3;
 var s2text;
 
 //Keyboard location
@@ -23,7 +22,7 @@ var knbX = 50;
 var knbY = 10;
 
 
-w= Window("testgui",Rect(100,300,1000,800));
+w= Window("testgui",Rect(100,300,800,800));
 
 
 //KNOB GUI
@@ -52,24 +51,11 @@ knobP.do( {arg item, i;
 
 });
 
-/*k1= Knob(w,Rect(110,50,80,80))
-.keyDownAction_({})
-.action={~ccOnFunc.value(127*k1.value,21,0,0);}
-;*/
-
-
-
-/*s1 = Slider(w,Rect(250,50,20,80))
-.keyDownAction_({})
-.action = {(127*s1.value).postln}
-;*/
-
-
 
 s2 = Slider(w,Rect(100,kY,20,120))
 .keyDownAction_({})
 .action = {
-	oct = floor(10*s2.value);
+	oct = floor(8*s2.value);
 	s2text.value = oct}
 ;
 s2text = TextField(s2, Rect(0, 0, 20, 20));
@@ -88,10 +74,10 @@ whiteKeys.do({arg item, i;
 	.action_({arg b;
 		case
 		{b.value== 1} {
-			~noteOnFunc.value(100, item+(oct*12), 0, 0);
-			//(item+(oct*12)).postln;
+			~noteOnFunc.value(100, item+((oct+1)*12), 0, 0);
+			//(item+((oct+1)*12)).postln;
 		}
-		{b.value == 0} {~noteOffFunc.value(0, item+(oct*12), 0, 0)};
+		{b.value == 0} {~noteOffFunc.value(0, item+((oct+1)*12), 0, 0)};
 	});
 });
 
@@ -109,10 +95,10 @@ blackKeys.do({arg item, i;
 	.action_({arg b;
 		case
 		{b.value== 1} {
-			~noteOnFunc.value(100, item+(oct*12), 0, 0);
-			//(item+(oct*12)).postln;
+			~noteOnFunc.value(100, item+((oct+1)*12), 0, 0);
+			//(item+((oct+1)*12)).postln;
 		}
-		{b.value == 0} {~noteOffFunc.value(0, item+(oct*12), 0, 0)};
+		{b.value == 0} {~noteOffFunc.value(0, item+((oct+1)*12), 0, 0)};
 	});
 });
 

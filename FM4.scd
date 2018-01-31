@@ -26,38 +26,39 @@ MIDIIn.connectAll;
 //Algorithm 1
 SynthDef(\sinpk, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, attack1 = 0.01, decay1 = 0.3, sustain1 = 0.5, release1 = 0.5, peakLevel1 = 1, curve1 = 0, bias1 = 0, mix2 = 5, attack2 = 0.01, decay2 = 3, sustain2 = 0.5, release2 = 0.5, peakLevel2 = 1, curve2 = 0, bias2 = 0, wave1 = 0, wave2 = 0, ratio2 = 1, coarse2 = 0, ratio1 = 1, coarse1 = 0, noise = 0, filterFreq = 20000, filterRes = 1, master = 0.5, aF = 1;
 
-    var x, y;
-	var env1 = Env.adsr(attack1, decay1, sustain1, release1,peakLevel1,curve1,bias1);
-	var env2 = Env.adsr(attack2, decay2, sustain2, release2,peakLevel2,curve2,bias2);
+    var x, y, limited, out;
+	var env1 = Env.adsr(aF*attack1, aF*decay1, aF*sustain1, aF*release1,aF*peakLevel1,aF*curve1,aF*bias1);
+	var env2 = Env.adsr(aF*attack2, aF*decay2, aF*sustain2, aF*release2, aF*peakLevel2, aF*curve2, aF*bias2);
 
 	var freq1 = freq*(ratio1+coarse1)*aF;
 	var freq2 = freq1*(ratio2+coarse2);
 
 	y = SinOsc.ar(freq2,0,1);
-	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2,0,0.5,1)]);
-	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2,0,1)]);
+	y = Select.ar(wave2 > 0, [y, Pulse.ar(freq2,0.5,1)]);
+	y = Select.ar(wave2 > 1, [y, Saw.ar(freq2,1)]);
 	y = (mix2/10)*y;
 	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
 
 
 	x = SinOsc.ar(freq1,y,1);
-	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1,y,0.5,1)]);
-	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1,y,1)]);
+	x = Select.ar(wave1 > 0, [x, 5*Pulse.ar(freq1,0.5,y)]);
+	x = Select.ar(wave1 > 1, [x, 5*Saw.ar(freq1,y)]);
 	x = (mix1/10)*x;
-	x = x + PinkNoise.ar(noise/10);
+	x = x + (aF*PinkNoise.ar(noise/10));
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
 
-	x = BLowPass4.ar(x, filterFreq, filterRes);
+	//x = BLowPass.ar(x, filterFreq, filterRes);
 
-	Out.ar(0, master*(vel/127)*Pan2.ar(x));
-	//Out.ar(0, Pan2.ar(y));
+	//master volume and clip limit
+	out = master*(vel/127)*Pan2.ar(x);
+	Out.ar(0, out);
 
 }).add;
 
 //Algorithm 2
 SynthDef(\sinpk2, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, attack1 = 0.01, decay1 = 0.3, sustain1 = 0.5, release1 = 0.5, peakLevel1 = 1, curve1 = 0, bias1 = 0, mix2 = 5, attack2 = 0.01, decay2 = 3, sustain2 = 0.5, release2 = 0.5, peakLevel2 = 1, curve2 = 0, bias2 = 0, wave1 = 0, wave2 = 0, ratio2 = 1, coarse2 = 0, ratio1 = 1, coarse1 = 0, noise = 0, filterFreq = 20000, filterRes = 1, master = 0.5, aF = 1;
 
-    var x, y;
+    var x, y, out, limited;
 	var env1 = Env.adsr(attack1, decay1, sustain1, release1,peakLevel1,curve1,bias1);
 	var env2 = Env.adsr(attack2, decay2, sustain2, release2,peakLevel2,curve2,bias2);
 
@@ -78,14 +79,16 @@ SynthDef(\sinpk2, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, attack1 = 0.0
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
 
 	x = x + y;
-	x = BLowPass4.ar(x, filterFreq, filterRes);
+	//x = BLowPass.ar(x, filterFreq, filterRes);
 
-	Out.ar(0, master*(vel/127)*Pan2.ar(x));
-	//Out.ar(0, Pan2.ar(y));
+	out = master*(vel/127)*Pan2.ar(x);
+	Out.ar(0, out);
 
 }).add;
 
 )
+
+
 
 //-----------------------------------------------------------------------------//
 
@@ -125,6 +128,7 @@ ccs = Array.newClear(128);
 	{algorithm == 2} {synthN = \sinpk2};
 
 	node = Synth(synthN, [\freq, num.midicps, \vel, val, \ratio1, ratio1, \coarse1, coarse1, \ratio2, ratio2, \coarse2, coarse2, \mix1, mix1, \peakLevel1, peakLevel1, \attack1, attack1, \decay1, decay1, \sustain1, sustain1, \release1, release1, \mix2, mix2, \peakLevel2, peakLevel2, \attack2, attack2, \decay2, decay2, \sustain2, sustain2, \release2, release2, \wave1, wave1, \wave2, wave2, \noise, noise, \filterFreq, filterFreq, \filterRes, filterRes, \master, master, \aF, aF]);
+
 
 	keys.put(num, node);
 
@@ -342,10 +346,10 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 
 	{numcc == 25 && chancc == 2} {
 		filterFreq = 20000*(valcc/127);
-/*		case
+		case
 		{valcc < 42} {filterFreq = 100*valcc/42+0}
 		{valcc < 85} {filterFreq = 900*((valcc-42)/42)+100}
-		{valcc < 128} {filterFreq = 19000*((valcc-84)/43)+1000};*/
+		{valcc < 128} {filterFreq = 19000*((valcc-84)/43)+1000};
 
 		for (0, 127, {arg i;
 			keys[i].set(\filterFreq, filterFreq+20);
