@@ -41,8 +41,8 @@ SynthDef(\sinpk, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, attack1 = 0.01
 
 
 	x = SinOsc.ar(freq1,y,1);
-	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1,y,0.5,1)]);
-	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1,y,1)]);
+	x = Select.ar(wave1 > 0, [x, 5*Pulse.ar(freq1,0.5,y)]);
+	x = Select.ar(wave1 > 1, [x, 5*Saw.ar(freq1,y)]);
 	x = (mix1/10)*x;
 	x = x + (aF*PinkNoise.ar(noise/10));
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
@@ -109,20 +109,15 @@ SynthDef(\lowpass, {arg freq = 10000, amount = 0, rate = 5, res = 1;
  //           DELAY             //
 /////////////////////////////////
 
-SynthDef(\delay, {arg num = 0, del = 0.001, dec = 0.01 ;
-	var input, effect, effect2, effect3, effect4, effect5;
+SynthDef(\delay, {arg del = 0.001, dec = 0.01 ;
+  var input, effect;
 
-	input= In.ar(0,1); //get two channels of input starting (and ending) on bus 0
+  input= In.ar(0,1); //get two channels of input starting (and ending) on bus 0
 
-	// Add some smoothing to both the decay and delay time control
+  // Add some smoothing to both the decay and delay time control
+  effect = DelayN.ar(input, 1, Lag.kr(del, 2), Lag.kr(dec, 0.09)); // Max delay of one second
 
-	effect = num*DelayL.ar(input, 2, Lag.kr(del, 2), Lag.kr(dec, 0.09)); // Max delay of one second
-	effect2 = num*max(0,(dec-del))*DelayL.ar(input, 2, Lag.kr(2*del, 2), Lag.kr(dec, 0.09));
-	effect3 = num*max(0,(dec-(2*del)))*DelayL.ar(input, 2, Lag.kr(3*del, 2), Lag.kr(dec, 0.09));
-	effect4 = num*max(0,(dec-(4*del)))*DelayL.ar(input, 2, Lag.kr(4*del, 2), Lag.kr(dec, 0.09));
-	effect5 = num*max(0,(dec-(5*del)))*DelayL.ar(input, 2, Lag.kr(5*del, 2), Lag.kr(dec, 0.09));
-
-	Out.ar(0,(effect+effect2+effect3+effect4+effect5)); // Add to output
+  Out.ar(0,effect); // Add to output
 }).add;
 
 
@@ -181,12 +176,12 @@ SynthDef(\limiter, {arg gain = 1;
 
 (
 // https://gist.github.com/umbrellaprocess/973d2aa16e95bf329ee2
-var ratio1 = 1, coarse1 = 0, peakLevel1 = 1, mix1=5, attack1=0.01, decay1 = 0.3, sustain1=0.5, release1=0.5;
-var ratio2 = 1, coarse2 = 0, peakLevel2 = 1, mix2=5, attack2=0.01, decay2 = 0.3, sustain2=0.5, release2=0.5;
-var noise = 0, wave1 = 0, wave2 = 0, filterFreq = 10000, filterRes = 1, master = 0.5, analogFac = 0;
-var algorithm = 1;
-var lfoRate = 0.5, lfoAmount = 0;
-var dnum = 0, ddec = 0.01, ddel = 0.001;
+var ratio1 = 1, coarse1 = 0, peakLevel1 = 1, mix1=5, attack1=rrand(0.01,1), decay1 = rrand(0.25,5), sustain1=rrand(0.25,1), release1=rrand(0.25,5);
+var ratio2 = round(rand(1,4)), coarse2 = 0, peakLevel2 = 1, mix2=5, attack2=rand(0.01,1), decay2 = rand(0.01,1), sustain2 = rrand(0.25,1), release2=rrand(0.25,5);
+var noise = 0, wave1 = 0, wave2 = round(rrand(0,2)), filterFreq = rrand(100,10000), filterRes = 1, master = 0.5, analogFac = rrand(0,1);
+var algorithm = round(rrand(1,2));
+var lfoRate = rrand(0.01,10), lfoAmount = rrand(0,1);
+var ddec = 0.01, ddel = 0.001;
 var rdec = 1, rdel = 0.01, rwet = 0;
 
 
@@ -489,44 +484,38 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 	//BANK 4: EFFECTS
 
 	{numcc == 21 && chancc == 3} {
-		dnum = (valcc.linlin(0,127,0,1));
-		de.set(\num, dnum);
-		('dnum: ').post; dnum.postln;
-	}
-
-	{numcc == 22 && chancc == 3} {
-		ddel = valcc.linlin(0,127,0.001,0.999);
+		ddel = valcc.linlin(0,127,0.0001,0.999);
 		de.set(\del, ddel);
 		('ddel: ').post; ddel.postln;
 	}
 
 
-	{numcc == 23 && chancc == 3} {
+	{numcc == 22 && chancc == 3} {
 		ddec = valcc.linlin(0,127,0.01,0.999);
 		de.set(\dec, ddec);
 		('ddec: ').post; ddec.postln;
 	}
 
-	{numcc == 24 && chancc == 3} {
+	{numcc == 23 && chancc == 3} {
 		rdel = (valcc/127);
 		re.set(\del, rdel);
 		('rdel: ').post; rdel.postln;
 	}
 
 
-	{numcc == 25 && chancc == 3} {
+	{numcc == 24 && chancc == 3} {
 		rdec = (valcc/127);
 		re.set(\dec, rdec);
 		('rdec: ').post; rdec.postln;
 	}
 
-	{numcc == 26 && chancc == 3} {
+	{numcc == 25 && chancc == 3} {
 		rwet = (valcc/127);
 		re.set(\wet, rwet);
 		('rwet: ').post; rwet.postln;
 	}
 
-	{numcc == 27 && chancc == 3} {
+	{numcc == 26 && chancc == 3} {
 		lfoRate = 15*(valcc/127);
 
 		case
@@ -538,7 +527,7 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 		('lfoRate: ').post; lfoRate.postln;
 	}
 
-	{numcc == 28 && chancc == 3} {
+	{numcc == 27 && chancc == 3} {
 		lfoAmount = 0.99*(valcc/127);
 		lp.set(\amount, lfoAmount);
 		('lfoAmount: ').post; lfoAmount.postln;
