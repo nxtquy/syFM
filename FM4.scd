@@ -109,42 +109,43 @@ SynthDef(\lowpass, {arg freq = 10000, amount = 0, rate = 5, res = 1;
  //           DELAY             //
 /////////////////////////////////
 
-SynthDef(\delay, {arg num = 0, del = 0.001, dec = 0.01 ;
+SynthDef(\delay, {arg wet = 0, del = 0.001, dec = 0.01 ;
 	var input, effect, effect2, effect3, effect4, effect5;
 
 	input= In.ar(0,1); //get two channels of input starting (and ending) on bus 0
 
 	// Add some smoothing to both the decay and delay time control
 
-	effect = num*DelayL.ar(input, 2, Lag.kr(del, 2), Lag.kr(dec, 0.09)); // Max delay of one second
-	effect2 = num*max(0,(dec-del))*DelayL.ar(input, 2, Lag.kr(2*del, 2), Lag.kr(dec, 0.09));
-	effect3 = num*max(0,(dec-(2*del)))*DelayL.ar(input, 2, Lag.kr(3*del, 2), Lag.kr(dec, 0.09));
-	effect4 = num*max(0,(dec-(4*del)))*DelayL.ar(input, 2, Lag.kr(4*del, 2), Lag.kr(dec, 0.09));
-	effect5 = num*max(0,(dec-(5*del)))*DelayL.ar(input, 2, Lag.kr(5*del, 2), Lag.kr(dec, 0.09));
+	effect = DelayL.ar(input, 2, Lag.kr(del, 2), Lag.kr(dec, 0.09)); // Max delay of one second
+	effect2 = max(0,(dec-del))*DelayL.ar(input, 2, Lag.kr(2*del, 2), Lag.kr(dec, 0.09));
+	effect3 = max(0,(dec-(2*del)))*DelayL.ar(input, 2, Lag.kr(3*del, 2), Lag.kr(dec, 0.09));
+	effect4 = max(0,(dec-(4*del)))*DelayL.ar(input, 2, Lag.kr(4*del, 2), Lag.kr(dec, 0.09));
+	effect5 = max(0,(dec-(5*del)))*DelayL.ar(input, 2, Lag.kr(5*del, 2), Lag.kr(dec, 0.09));
 
-	Out.ar(0,(effect+effect2+effect3+effect4+effect5)); // Add to output
+	Out.ar(0,wet*(effect+effect2+effect3+effect4+effect5)); // Add to output
 }).add;
 
 
   /////////////////////////////////
  //           REVERB            //
 /////////////////////////////////
-SynthDef(\reverb, {arg del=0.01, dec=1, wet = 0;
+SynthDef(\reverb, {arg del=0.048, dec=1, wet = 0;
 	var input;
 	var numc,numa,temp, env;
 
 	input=In.ar(0,1); //get two channels of input starting (and ending) on bus 0
 
-	numc = 4; // number of comb delays
-	numa = 6; // number of allpass delays
+	numc = 6; // number of comb delays
+	numa = 4; // number of allpass delays
 
 	// reverb predelay time :
-	temp = DelayN.ar(input, 0.048,0.048);
 
-	temp=Mix.fill(numc,{CombL.ar(temp,0.1,rrand(0.01, 0.1),5)});
+	temp = DelayN.ar(input, 1, del);
+
+	temp=Mix.fill(numc,{CombL.ar(temp,0.1,rrand(0.01, 0.1),dec)});
 
 	// chain of 4 allpass delays on each of two channels (8 total) :
-	numa.do({ temp = AllpassN.ar(temp, 0.051, [rrand(0.01, 0.05),rrand(0.01, 0.05)], 1) });
+	numa.do({ temp = AllpassN.ar(temp, 0.051, rrand(0.01, 0.05), dec) });
 	temp = 0.2*temp*wet;
 
 	//temp = FreeVerb.ar(input, wet, del, dec, 1, 0);
@@ -186,8 +187,8 @@ var ratio2 = 1, coarse2 = 0, peakLevel2 = 1, mix2=5, attack2=0.01, decay2 = 0.3,
 var noise = 0, wave1 = 0, wave2 = 0, filterFreq = 10000, filterRes = 1, master = 0.5, analogFac = 0;
 var algorithm = 1;
 var lfoRate = 0.5, lfoAmount = 0;
-var dnum = 0, ddec = 0.01, ddel = 0.001;
-var rdec = 1, rdel = 0.01, rwet = 0;
+var dwet = 0, ddec = 0.01, ddel = 0.001;
+var rdec = 2, rdel = 0.048, rwet = 0;
 
 
 var ccres = 127;
@@ -406,13 +407,13 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 
 	//BANK 3: GLOBAL CONTROL/MIX
 
-	{numcc == 21 && chancc == 2} {
+	{numcc == 21 && chancc == 4} {
 		algorithm = 1+round(valcc/127);
 		('algorithm: ').post; algorithm.postln;
 	}
 
 
-	{numcc == 22 && chancc == 2} {
+	{numcc == 22 && chancc == 4} {
 		noise = 10*(valcc/127);
 		for (0, 127, {arg i;
 			keys[i].set(\noise, noise);
@@ -421,7 +422,7 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 		('noise: ').post; noise.postln;
 	}
 
-	{numcc == 23 && chancc == 2} {
+	{numcc == 23 && chancc == 4} {
 		mix1 = 10*(valcc/127);
 		for (0, 127, {arg i;
 			keys[i].set(\mix1, mix1);
@@ -430,7 +431,7 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 		('mix1: ').post; mix1.postln;
 	}
 
-	{numcc == 24 && chancc == 2} {
+	{numcc == 24 && chancc == 4} {
 		mix2 = 10*(valcc/127);
 		for (0, 127, {arg i;
 			keys[i].set(\mix2, mix2);
@@ -440,7 +441,7 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 	}
 
 
-	{numcc == 25 && chancc == 2} {
+	{numcc == 25 && chancc == 4} {
 		filterFreq = 20000*(valcc/127);
 		case
 		{valcc < 42} {filterFreq = (100*valcc/42)+50}
@@ -455,7 +456,7 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 		('filterFreq: ').post; filterFreq.postln;
 	}
 
-	{numcc == 26 && chancc == 2} {
+	{numcc == 26 && chancc == 4} {
 		valcc = 127 - valcc;
 		case
 		{valcc < 42} {filterRes = 0.075*valcc/42+0.025}
@@ -471,12 +472,12 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 
 
 
-	{numcc == 27 && chancc == 2} {
+	{numcc == 27 && chancc == 4} {
 		analogFac = valcc/(127);
 		('analogFac: ').post; analogFac.postln;
 	}
 
-	{numcc == 28 && chancc == 2} {
+	{numcc == 28 && chancc == 4} {
 		master = (valcc/127);
 		for (0, 127, {arg i;
 			keys[i].set(\master, master);
@@ -488,45 +489,46 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 
 	//BANK 4: EFFECTS
 
-	{numcc == 21 && chancc == 3} {
-		dnum = (valcc.linlin(0,127,0,1));
-		de.set(\num, dnum);
-		('dnum: ').post; dnum.postln;
+	{numcc == 21 && chancc == 5} {
+		dwet = (valcc.linlin(0,127,0,1));
+		de.set(\wet, dwet);
+		('dwet: ').post; dwet.postln;
 	}
 
-	{numcc == 22 && chancc == 3} {
+	{numcc == 22 && chancc == 5} {
 		ddel = valcc.linlin(0,127,0.001,0.999);
 		de.set(\del, ddel);
 		('ddel: ').post; ddel.postln;
 	}
 
 
-	{numcc == 23 && chancc == 3} {
+	{numcc == 23 && chancc == 5} {
 		ddec = valcc.linlin(0,127,0.01,0.999);
 		de.set(\dec, ddec);
 		('ddec: ').post; ddec.postln;
 	}
 
-	{numcc == 24 && chancc == 3} {
-		rdel = (valcc/127);
-		re.set(\del, rdel);
-		('rdel: ').post; rdel.postln;
-	}
 
-
-	{numcc == 25 && chancc == 3} {
-		rdec = (valcc/127);
-		re.set(\dec, rdec);
-		('rdec: ').post; rdec.postln;
-	}
-
-	{numcc == 26 && chancc == 3} {
+	{numcc == 24 && chancc == 5} {
 		rwet = (valcc/127);
 		re.set(\wet, rwet);
 		('rwet: ').post; rwet.postln;
 	}
 
-	{numcc == 27 && chancc == 3} {
+	{numcc == 25 && chancc == 5} {
+		rdel = (valcc.linlin(0,127,0.048,0.999));
+		re.set(\del, rdel);
+		('rdel: ').post; rdel.postln;
+	}
+
+
+	{numcc == 26 && chancc == 5} {
+		rdec = 10*(valcc/127);
+		re.set(\dec, rdec);
+		('rdec: ').post; rdec.postln;
+	}
+
+	{numcc == 27 && chancc == 5} {
 		lfoRate = 15*(valcc/127);
 
 		case
@@ -538,7 +540,7 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 		('lfoRate: ').post; lfoRate.postln;
 	}
 
-	{numcc == 28 && chancc == 3} {
+	{numcc == 28 && chancc == 5} {
 		lfoAmount = 0.99*(valcc/127);
 		lp.set(\amount, lfoAmount);
 		('lfoAmount: ').post; lfoAmount.postln;
