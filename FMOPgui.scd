@@ -150,38 +150,38 @@ w.view.keyDownAction = { arg view, char, modifiers, unicode, keycode;
 
 w.view.keyUpAction = { arg view, char, modifiers, unicode, keycode;
 	case
-	{keycode == 6} {buttonArray[0].valueAction = 0}
-	{keycode == 1} {buttonArray[1].valueAction = 0}
-	{keycode == 7} {buttonArray[2].valueAction = 0}
-	{keycode == 2} {buttonArray[3].valueAction = 0}
-	{keycode == 8} {buttonArray[4].valueAction = 0}
-	{keycode == 9} {buttonArray[5].valueAction = 0}
-	{keycode == 5} {buttonArray[6].valueAction = 0}
-	{keycode == 11} {buttonArray[7].valueAction = 0}
-	{keycode == 4} {buttonArray[8].valueAction = 0}
-	{keycode == 45} {buttonArray[9].valueAction = 0}
-	{keycode == 38} {buttonArray[10].valueAction = 0}
-	{keycode == 46} {buttonArray[11].valueAction = 0}
-	{keycode == 43} {buttonArray[12].valueAction = 0}
+	{unicode == 122} {buttonArray[0].valueAction = 0}
+	{unicode == 115} {buttonArray[1].valueAction = 0}
+	{unicode == 120} {buttonArray[2].valueAction = 0}
+	{unicode == 100} {buttonArray[3].valueAction = 0}
+	{unicode == 99} {buttonArray[4].valueAction = 0}
+	{unicode == 118} {buttonArray[5].valueAction = 0}
+	{unicode == 103} {buttonArray[6].valueAction = 0}
+	{unicode == 98} {buttonArray[7].valueAction = 0}
+	{unicode == 104} {buttonArray[8].valueAction = 0}
+	{unicode == 110} {buttonArray[9].valueAction = 0}
+	{unicode == 106} {buttonArray[10].valueAction = 0}
+	{unicode == 109} {buttonArray[11].valueAction = 0}
+	{unicode == 44} {buttonArray[12].valueAction = 0}
 
-	{keycode == 12} {buttonArray[12].valueAction = 0}
-	{keycode == 19} {buttonArray[13].valueAction = 0}
-	{keycode == 13} {buttonArray[14].valueAction = 0}
-	{keycode == 20} {buttonArray[15].valueAction = 0}
-	{keycode == 14} {buttonArray[16].valueAction = 0}
-	{keycode == 15} {buttonArray[17].valueAction = 0}
-	{keycode == 23} {buttonArray[18].valueAction = 0}
-	{keycode == 17} {buttonArray[19].valueAction = 0}
-	{keycode == 22} {buttonArray[20].valueAction = 0}
-	{keycode == 16} {buttonArray[21].valueAction = 0}
-	{keycode == 26} {buttonArray[22].valueAction = 0}
-	{keycode == 32} {buttonArray[23].valueAction = 0}
-	{keycode == 34} {buttonArray[24].valueAction = 0}
+	{unicode == 113} {buttonArray[12].valueAction = 0}
+	{unicode == 50} {buttonArray[13].valueAction = 0}
+	{unicode == 119} {buttonArray[14].valueAction = 0}
+	{unicode == 51} {buttonArray[15].valueAction = 0}
+	{unicode == 101} {buttonArray[16].valueAction = 0}
+	{unicode == 114} {buttonArray[17].valueAction = 0}
+	{unicode == 53} {buttonArray[18].valueAction = 0}
+	{unicode == 116} {buttonArray[19].valueAction = 0}
+	{unicode == 54} {buttonArray[20].valueAction = 0}
+	{unicode == 121} {buttonArray[21].valueAction = 0}
+	{unicode == 55} {buttonArray[22].valueAction = 0}
+	{unicode == 117} {buttonArray[23].valueAction = 0}
+	{unicode == 105} {buttonArray[24].valueAction = 0}
 
-	{keycode == 25} {buttonArray[25].valueAction = 0}
-	{keycode == 31} {buttonArray[26].valueAction = 0}
-	{keycode == 29} {buttonArray[27].valueAction = 0}
-	{keycode == 35} {buttonArray[28].valueAction = 0};
+	{unicode == 57} {buttonArray[25].valueAction = 0}
+	{unicode == 111} {buttonArray[26].valueAction = 0}
+	{unicode == 48} {buttonArray[27].valueAction = 0}
+	{unicode == 112} {buttonArray[28].valueAction = 0};
 
 
 };
