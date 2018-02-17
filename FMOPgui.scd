@@ -14,7 +14,7 @@ var s2text;
 //Keyboard location
 var o1s = 150; //X location
 var o2s = 210+o1s;
-var kY = 600; // Y location
+var kY = 650; // Y location
 var add = 0;
 
 //Knobs location
@@ -22,19 +22,20 @@ var knbX = 50;
 var knbY = 10;
 
 
-w= Window("testgui",Rect(100,300,800,800));
+w= Window("testgui",Rect(100,300,800,850));
 
 
 //KNOB GUI
 
 knobArray = Array.newClear(100);
 knobP = Array.with(
-	'WAV1','FINE1','COARSE1','PK1','ATK1','DEC1','SUS1','REL1',
-	'WAV2','FINE2','COARSE2','PK2','ATK2','DEC2','SUS2','REL2',
-	'WAV3','FINE3','COARSE3','PK3','ATK3','DEC3','SUS3','REL3',
-	'WAV4','FINE4','COARSE4','PK4','ATK4','DEC4','SUS4','REL4',
-	'ALG','NOISE','MIX1','MIX2','FILTER','RES','ANLGFAC','MASTER',
-	'DWET','DDEL','DDEC','RWET','RDEL','RDEC','LFOR','LFOA'
+	'WAV1','FINE1','COARSE1','DEL1','ATK1','DEC1','SUS1','REL1',
+	'WAV2','FINE2','COARSE2','DEL2','ATK2','DEC2','SUS2','REL2',
+	'WAV3','FINE3','COARSE3','DEL3','ATK3','DEC3','SUS3','REL3',
+	'WAV4','FINE4','COARSE4','DEL4','ATK4','DEC4','SUS4','REL4',
+	'MIX1','MIX2','MIX3','MIX4','PK1','PK2','PK3','PK4',
+	'ALG','NOISE','FILTER','RES','N/A','N/A','ANLGFAC','MASTER',
+	'DWET','DDEL','DDEC','RWET','RDEL','RDEC','LFOR','LFOA',
 
 
 );

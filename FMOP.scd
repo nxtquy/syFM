@@ -24,66 +24,97 @@ MIDIIn.connectAll;
 //https://carlcolglazier.com/notes/acoustics/midi-instrument-control-supercollider/
 
 //Algorithm 1
-SynthDef(\sinpk, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, attack1 = 0.01, decay1 = 0.3, sustain1 = 0.5, release1 = 0.5, peakLevel1 = 1, curve1 = 0, bias1 = 0, mix2 = 5, attack2 = 0.01, decay2 = 3, sustain2 = 0.5, release2 = 0.5, peakLevel2 = 1, curve2 = 0, bias2 = 0, wave1 = 0, wave2 = 0, ratio2 = 1, coarse2 = 0, ratio1 = 1, coarse1 = 0, noise = 0, filterFreq = 20000, filterRes = 1, master = 0.5, aF = 1;
+SynthDef(\sinpk, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.001, attack1 = 0.01, decay1 = 0.3, sustain1 = 0.5, release1 = 0.5, peakLevel1 = 1, curve1 = 0, bias1 = 0, mix2 = 5, delay2 = 0.001, attack2 = 0.01, decay2 = 3, sustain2 = 0.5, release2 = 0.5, peakLevel2 = 1, curve2 = 0, bias2 = 0, mix3 = 5, delay3 = 0.001, attack3 = 0.01, decay3 = 0.3, sustain3 = 0.5, release3 = 0.5, peakLevel3 = 1, curve3 = 0, bias3 = 0, mix4 = 5, delay4 = 0.001, attack4 = 0.01, decay4 = 0.3, sustain4 = 0.5, release4 = 0.5, peakLevel4 = 1, curve4 = 0, bias4 = 0, wave1 = 0, wave2 = 0, wave3 = 0, wave4 = 0, ratio2 = 1, coarse2 = 0, ratio1 = 1, coarse1 = 0, ratio3 = 1, coarse3 = 0, ratio4 = 1, coarse4 = 0, noise = 0, aF = 1;
 
     var x, y, limited, out;
-	var env1 = Env.adsr(aF*attack1, aF*decay1, aF*sustain1, aF*release1,aF*peakLevel1,aF*curve1,aF*bias1);
-	var env2 = Env.adsr(aF*attack2, aF*decay2, aF*sustain2, aF*release2, aF*peakLevel2, aF*curve2, aF*bias2);
+	var env1 = Env.dadsr(delay1, attack1, decay1, sustain1, release1,peakLevel1,curve1,bias1);
+	var env2 = Env.dadsr(delay2, attack2, decay2, sustain2, release2, peakLevel2, curve2, bias2);
+	var env3 = Env.dadsr(delay3, attack3, decay3, sustain3, release3, peakLevel3, curve3, bias3);
+	var env4 = Env.dadsr(delay4, attack4, decay4, sustain4, release4, peakLevel4, curve4, bias4);
 
-	var freq1 = freq*(ratio1+coarse1)*aF;
-	var freq2 = freq1*(ratio2+coarse2);
+	var freq1 = freq*(ratio1+coarse1*aF);
+	var freq2 = freq*(ratio2+coarse2*aF);
+	var freq3 = freq*(ratio3+coarse3*aF);
+	var freq4 = freq*(ratio4+coarse4*aF);
 
-	y = SinOsc.ar(freq2,0,1);
-	y = Select.ar(wave2 > 0, [y, Pulse.ar(freq2,0.5,1)]);
-	y = Select.ar(wave2 > 1, [y, Saw.ar(freq2,1)]);
+	w = SinOsc.ar(freq4,0,1);
+	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
+	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w= (mix4/10)*w;
+	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
+
+	z = SinOsc.ar(freq3,w,1);
+	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, w, 0.5,1)]);
+	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, w, 1)]);
+	z = (mix3/10)*z;
+	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
+
+	y = SinOsc.ar(freq2,z,1);
+	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, z, 0.5,1)]);
+	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, z, 1)]);
 	y = (mix2/10)*y;
 	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
 
 
 	x = SinOsc.ar(freq1,y,1);
-	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1,y,0.5,1)]);
-	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1,y,1)]);
+	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, y, 0.5, 1)]);
+	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, y, 1)]);
 	x = (mix1/10)*x;
 	x = x + (aF*PinkNoise.ar(noise/10));
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
 
-	//x = BLowPass.ar(x, filterFreq, filterRes);
-
 	//master volume and clip limit
 	x = LeakDC.ar(x,0.995,1,0);
-	out = master*(vel/127)*x;
+	out = (vel/127)*x;
 	Out.ar(0, out);
 
 }).add;
 
-//Algorithm 2
-SynthDef(\sinpk2, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, attack1 = 0.01, decay1 = 0.3, sustain1 = 0.5, release1 = 0.5, peakLevel1 = 1, curve1 = 0, bias1 = 0, mix2 = 5, attack2 = 0.01, decay2 = 3, sustain2 = 0.5, release2 = 0.5, peakLevel2 = 1, curve2 = 0, bias2 = 0, wave1 = 0, wave2 = 0, ratio2 = 1, coarse2 = 0, ratio1 = 1, coarse1 = 0, noise = 0, filterFreq = 20000, filterRes = 1, master = 0.5, aF = 1;
+//ALGORITHM 2
+SynthDef(\sinpk2, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.001, attack1 = 0.01, decay1 = 0.3, sustain1 = 0.5, release1 = 0.5, peakLevel1 = 1, curve1 = 0, bias1 = 0, mix2 = 5, delay2 = 0.001, attack2 = 0.01, decay2 = 3, sustain2 = 0.5, release2 = 0.5, peakLevel2 = 1, curve2 = 0, bias2 = 0, mix3 = 5, delay3 = 0.001, attack3 = 0.01, decay3 = 0.3, sustain3 = 0.5, release3 = 0.5, peakLevel3 = 1, curve3 = 0, bias3 = 0, mix4 = 5, delay4 = 0.001, attack4 = 0.01, decay4 = 0.3, sustain4 = 0.5, release4 = 0.5, peakLevel4 = 1, curve4 = 0, bias4 = 0, wave1 = 0, wave2 = 0, wave3 = 0, wave4 = 0, ratio2 = 1, coarse2 = 0, ratio1 = 1, coarse1 = 0, ratio3 = 1, coarse3 = 0, ratio4 = 1, coarse4 = 0, noise = 0, aF = 1;
 
-    var x, y, out, limited;
-	var env1 = Env.adsr(attack1, decay1, sustain1, release1,peakLevel1,curve1,bias1);
-	var env2 = Env.adsr(attack2, decay2, sustain2, release2,peakLevel2,curve2,bias2);
+    var x, y, limited, out;
+	var env1 = Env.dadsr(delay1, attack1, decay1, sustain1, release1,peakLevel1,curve1,bias1);
+	var env2 = Env.dadsr(delay2, attack2, decay2, sustain2, release2, peakLevel2, curve2, bias2);
+	var env3 = Env.dadsr(delay3, attack3, decay3, sustain3, release3, peakLevel3, curve3, bias3);
+	var env4 = Env.dadsr(delay4, attack4, decay4, sustain4, release4, peakLevel4, curve4, bias4);
 
-	var freq1 = freq*(ratio1+coarse1)*aF;
-	var freq2 = freq*(ratio2+coarse2)*aF;
+	var freq1 = freq*(ratio1+coarse1*aF);
+	var freq2 = freq*(ratio2+coarse2*aF);
+	var freq3 = freq*(ratio3+coarse3*aF);
+	var freq4 = freq*(ratio4+coarse4*aF);
+
+	w = SinOsc.ar(freq4,0,1);
+	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
+	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w= (mix4/10)*w;
+	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
+
+	z = SinOsc.ar(freq3,0,1);
+	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, 0, 0.5,1)]);
+	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, 0, 1)]);
+	z = (mix3/10)*z;
+	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
 
 	y = SinOsc.ar(freq2,0,1);
-	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2,0,0.5,1)]);
-	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2,0,1)]);
+	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, 0, 0.5,1)]);
+	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, 0, 1)]);
 	y = (mix2/10)*y;
 	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
 
+
 	x = SinOsc.ar(freq1,0,1);
-	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1,0,0.5,1)]);
-	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1,0,1)]);
+	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, 0, 0.5, 1)]);
+	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, 0, 1)]);
 	x = (mix1/10)*x;
-	x = x + PinkNoise.ar(noise/10);
+	x = x + (aF*PinkNoise.ar(noise/10));
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
 
-	x = (0.5*x) + (0.5*y);
-	//x = BLowPass.ar(x, filterFreq, filterRes);
+	x = x + y + z + w;
 
+	//master volume and clip limit
 	x = LeakDC.ar(x,0.995,1,0);
-	out = master*(vel/127)*x;
+	out = (vel/127)*x;
 	Out.ar(0, out);
 
 }).add;
@@ -93,15 +124,22 @@ SynthDef(\sinpk2, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, attack1 = 0.0
  //       LOWPASS FILTER        //
 /////////////////////////////////
 
-SynthDef(\lowpass, {arg freq = 10000, amount = 0, rate = 5, res = 1;
-  var input, effect, sine;
+SynthDef(\lowpass, {arg freq = 10000, amount = 0, rate = 5, res = 1, gate = 1, delay = 0.001, attack = 0.01, decay = 0.3, sustain = 1, release = 0.2;
+	var input, effect, sine, env;
 
-  sine = SinOsc.kr(rate,0,0.5*amount,1); // LFO
+	sine = SinOsc.kr(rate,0,0.5*amount,1); // LFO
 
-  input = In.ar(0,1);
+	input = In.ar(0,1);
 	effect = LPF.ar(input, Lag.kr((sine)*freq,0.2)); // Apply LFO and smooth
 
-  ReplaceOut.ar(0,effect); // Replace output
+	//env = Env.dadsr(delay, attack, decay, sustain, release);
+	//effect = HPF.ar(input, freq, EnvGen.kr(env, gate, doneAction: 0));
+	//effect = input - effect;
+
+	//effect = EnvGen.kr(env, gate, doneAction: 2)*effect;
+
+
+	ReplaceOut.ar(0,effect); // Replace output
 }).add;
 
 
@@ -159,13 +197,13 @@ SynthDef(\reverb, {arg del=0.048, dec=1, wet = 0;
  //       FINAL LIMITER         //
 /////////////////////////////////
 
-SynthDef(\limiter, {arg gain = 1;
+SynthDef(\limiter, {arg master = 0.5;
   var input, effect;
 
   input = In.ar(0,1); //get first channel on bus 0
   // Note the exclamation mark followed by 2 makes
   // the the final output stereo
-  effect = Limiter.ar((gain*input), 0.9, 0.01 ! 2); // Apply gain
+  effect = Limiter.ar((master*input), 0.9, 0.01 ! 2); // Apply gain
 
   ReplaceOut.ar(0,effect); // Replace output
 }).add;
@@ -183,10 +221,15 @@ SynthDef(\limiter, {arg gain = 1;
 
 (
 // https://gist.github.com/umbrellaprocess/973d2aa16e95bf329ee2
-var ratio1 = 1, coarse1 = 0, peakLevel1 = 1, mix1=5, attack1=0.01, decay1 = 0.3, sustain1=0.5, release1=0.5;
-var ratio2 = 1, coarse2 = 0, peakLevel2 = 1, mix2=5, attack2=0.01, decay2 = 0.3, sustain2=0.5, release2=0.5;
-var noise = 0, wave1 = 0, wave2 = 0, filterFreq = 10000, filterRes = 1, master = 0.5, analogFac = 0;
+var ratio1 = 1, coarse1 = 0, peakLevel1 = 1, mix1=5, delay1 = 0.001, attack1=0.01, decay1 = 0.3, sustain1=0.5, release1=0.5;
+var ratio2 = 1, coarse2 = 0, peakLevel2 = 1, mix2=5, delay2 = 0.001, attack2=0.01, decay2 = 0.3, sustain2=0.5, release2=0.5;
+var ratio3 = 1, coarse3 = 0, peakLevel3 = 1, mix3 = 5, delay3 = 0.001, attack3 = 0.01, decay3 = 0.3, sustain3 = 0.5, release3 = 0.5;
+var ratio4 = 1, coarse4 = 0, peakLevel4 = 1, mix4 = 5, delay4 = 0.001, attack4 = 0.01, decay4 = 0.3, sustain4 = 0.5, release4 = 0.5;
+var noise = 0, wave1 = 0, wave2 = 0, wave3 = 0, wave4 = 0, analogFac = 0;
+
 var algorithm = 1;
+var filterFreq = 10000, filterRes = 1, fdelay = 0.001, fattack = 0.01, fdecay = 0.3, fsustain = 1, frelease = 0.2;
+var master = 0.5;
 var lfoRate = 0.5, lfoAmount = 0;
 var dwet = 0, ddec = 0.01, ddel = 0.001;
 var rdec = 2, rdel = 0.048, rwet = 0;
@@ -225,7 +268,7 @@ li = Synth.tail(g, \limiter);
 	{algorithm == 1} {synthN =\sinpk}
 	{algorithm == 2} {synthN = \sinpk2};
 
-	node = Synth.head(g,synthN, [\freq, num.midicps, \vel, val, \ratio1, ratio1, \coarse1, coarse1, \ratio2, ratio2, \coarse2, coarse2, \mix1, mix1, \peakLevel1, peakLevel1, \attack1, attack1, \decay1, decay1, \sustain1, sustain1, \release1, release1, \mix2, mix2, \peakLevel2, peakLevel2, \attack2, attack2, \decay2, decay2, \sustain2, sustain2, \release2, release2, \wave1, wave1, \wave2, wave2, \noise, noise, \filterFreq, filterFreq, \filterRes, filterRes, \master, master, \aF, aF]);
+	node = Synth.head(g,synthN, [\freq, num.midicps, \vel, val, \ratio1, ratio1, \coarse1, coarse1, \ratio2, ratio2, \coarse2, coarse2, \ratio3, ratio3, \coarse3, coarse3, \ratio4, ratio4, \coarse4, coarse4, \mix1, mix1, \peakLevel1, peakLevel1, \delay1, delay1, \attack1, attack1, \decay1, decay1, \sustain1, sustain1, \release1, release1, \mix2, mix2, \peakLevel2, peakLevel2, \delay2, delay2, \attack2, attack2, \decay2, decay2, \sustain2, sustain2, \release2, release2, \mix3, mix3, \peakLevel3, peakLevel3, \delay3, delay3, \attack3, attack3, \decay3, decay3, \sustain3, sustain3, \release3, release3, \mix4, mix4, \peakLevel4, peakLevel4, \delay4, delay4, \attack4, attack4, \decay4, decay4, \sustain4, sustain4, \release4, release4, \wave1, wave1, \wave2, wave2, \wave3, wave3, \wave4, wave4, \noise, noise, \aF, aF]);
 
 
 	keys.put(num, node);
@@ -268,12 +311,15 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 	}
 
 	{numcc == 24 && chancc == 0} {
-		peakLevel1 = (valcc/127);
+		case
+		{valcc < 42} {delay1 = 0.1*valcc/42+0}
+		{valcc < 85} {delay1 = 0.9*((valcc-42)/42)+0.1}
+		{valcc < 128} {delay1 = 9*((valcc-84)/43)+1};
 		for (0, 127, {arg i;
-			keys[i].set(\peakLevel1, peakLevel1);
+			keys[i].set(\delay1, delay1);
 		}
 		);
-		('peakLevel1: ').post; peakLevel1.postln;
+		('delay1: ').post; delay1.postln;
 	}
 
 	{numcc == 25 && chancc == 0} {
@@ -352,12 +398,15 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 	}
 
 	{numcc == 24 && chancc == 1} {
-		peakLevel2 = (valcc/127);
+		case
+		{valcc < 42} {delay2 = 0.1*valcc/42+0}
+		{valcc < 85} {delay2 = 0.9*((valcc-42)/42)+0.1}
+		{valcc < 128} {delay2 = 9*((valcc-84)/43)+1};
 		for (0, 127, {arg i;
-			keys[i].set(\peakLevel2, peakLevel2);
+			keys[i].set(\delay2, delay2);
 		}
 		);
-		('peakLevel2: ').post; peakLevel2.postln;
+		('delay2: ').post; delay2.postln;
 	}
 
 	{numcc == 25 && chancc == 1} {
@@ -406,24 +455,180 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 	}
 	//
 
-	//BANK 3: GLOBAL CONTROL/MIX
-
-	{numcc == 21 && chancc == 4} {
-		algorithm = 1+round(valcc/127);
-		('algorithm: ').post; algorithm.postln;
-	}
-
-
-	{numcc == 22 && chancc == 4} {
-		noise = 10*(valcc/127);
+	//BANK 3: OP3
+	{numcc == 21 && chancc == 2} {
+		wave3 = floor(valcc/43);
 		for (0, 127, {arg i;
-			keys[i].set(\noise, noise);
+			keys[i].set(\wave3, wave3);
 		}
 		);
-		('noise: ').post; noise.postln;
+		('wave3: ').post; wave3.postln;
 	}
 
-	{numcc == 23 && chancc == 4} {
+	{numcc == 22 && chancc == 2} {
+		ratio3 = floor((valcc+1)/8);
+		for (0, 127, {arg i;
+			keys[i].set(\ratio3, ratio3);
+		}
+		);
+		('Ratio3: ').post; ratio3.postln;
+	}
+
+	{numcc == 23 && chancc == 2} {
+		coarse3 = (valcc/127);
+		for (0, 127, {arg i;
+			keys[i].set(\coarse3, coarse3);
+		}
+		);
+		('coarse3: ').post; coarse3.postln;
+	}
+
+	{numcc == 24 && chancc == 2} {
+		case
+		{valcc < 42} {delay3 = 0.1*valcc/42+0}
+		{valcc < 85} {delay3 = 0.9*((valcc-42)/42)+0.1}
+		{valcc < 128} {delay3 = 9*((valcc-84)/43)+1};
+		for (0, 127, {arg i;
+			keys[i].set(\delay3, delay3);
+		}
+		);
+		('delay3: ').post; delay3.postln;
+	}
+
+	{numcc == 25 && chancc == 2} {
+		case
+		{valcc < 42} {attack3 = 0.1*valcc/42+0}
+		{valcc < 85} {attack3 = 0.9*((valcc-42)/42)+0.1}
+		{valcc < 128} {attack3 = 9*((valcc-84)/43)+1};
+		for (0, 127, {arg i;
+			keys[i].set(\attack3, attack3);
+		}
+		);
+		('attack3: ').post; attack3.postln;
+	}
+
+	{numcc == 26 && chancc == 2} {
+		case
+		{valcc < 42} {decay3 = 0.1*valcc/42+0}
+		{valcc < 85} {decay3 = 0.9*((valcc-42)/42)+0.1}
+		{valcc < 128} {decay3 = 9*((valcc-84)/43)+1};
+		for (0, 127, {arg i;
+			keys[i].set(\decay3, decay3);
+		}
+		);
+		('decay3: ').post; decay3.postln;
+	}
+
+	{numcc == 27 && chancc == 2} {
+		sustain3 = valcc/127;
+		for (0, 127, {arg i;
+			keys[i].set(\sustain3, sustain3);
+		}
+		);
+		('sustain3: ').post; sustain3.postln;
+	}
+
+	{numcc == 28 && chancc == 2} {
+		case
+		{valcc < 42} {release3 = 0.1*valcc/42+0}
+		{valcc < 85} {release3 = 0.9*((valcc-42)/42)+0.1}
+		{valcc < 128} {release3 = 9*((valcc-84)/43)+1};
+		for (0, 127, {arg i;
+			keys[i].set(\release3, release3);
+		}
+		);
+		('release3: ').post; release3.postln;
+	}
+	//
+
+	//BANK4: OP4
+	{numcc == 21 && chancc == 3} {
+		wave4 = floor(valcc/43);
+		for (0, 127, {arg i;
+			keys[i].set(\wave4, wave4);
+		}
+		);
+		('wave4: ').post; wave4.postln;
+	}
+
+	{numcc == 22 && chancc == 3} {
+		ratio4 = floor((valcc+1)/8);
+		for (0, 127, {arg i;
+			keys[i].set(\ratio4, ratio4);
+		}
+		);
+		('Ratio4: ').post; ratio4.postln;
+	}
+
+	{numcc == 23 && chancc == 3} {
+		coarse4 = (valcc/127);
+		for (0, 127, {arg i;
+			keys[i].set(\coarse4, coarse4);
+		}
+		);
+		('coarse4: ').post; coarse4.postln;
+	}
+
+	{numcc == 24 && chancc == 3} {
+		case
+		{valcc < 42} {delay4 = 0.1*valcc/42+0}
+		{valcc < 85} {delay4 = 0.9*((valcc-42)/42)+0.1}
+		{valcc < 128} {delay4 = 9*((valcc-84)/43)+1};
+		for (0, 127, {arg i;
+			keys[i].set(\delay4, delay4);
+		}
+		);
+		('delay4: ').post; delay4.postln;
+	}
+
+	{numcc == 25 && chancc == 3} {
+		case
+		{valcc < 42} {attack4 = 0.1*valcc/42+0}
+		{valcc < 85} {attack4 = 0.9*((valcc-42)/42)+0.1}
+		{valcc < 128} {attack4 = 9*((valcc-84)/43)+1};
+		for (0, 127, {arg i;
+			keys[i].set(\attack4, attack4);
+		}
+		);
+		('attack4: ').post; attack4.postln;
+	}
+
+	{numcc == 26 && chancc == 3} {
+		case
+		{valcc < 42} {decay4 = 0.1*valcc/42+0}
+		{valcc < 85} {decay4 = 0.9*((valcc-42)/42)+0.1}
+		{valcc < 128} {decay4 = 9*((valcc-84)/43)+1};
+		for (0, 127, {arg i;
+			keys[i].set(\decay4, decay4);
+		}
+		);
+		('decay4: ').post; decay4.postln;
+	}
+
+	{numcc == 27 && chancc == 3} {
+		sustain4 = valcc/127;
+		for (0, 127, {arg i;
+			keys[i].set(\sustain4, sustain4);
+		}
+		);
+		('sustain4: ').post; sustain4.postln;
+	}
+
+	{numcc == 28 && chancc == 3} {
+		case
+		{valcc < 42} {release4 = 0.1*valcc/42+0}
+		{valcc < 85} {release4 = 0.9*((valcc-42)/42)+0.1}
+		{valcc < 128} {release4 = 9*((valcc-84)/43)+1};
+		for (0, 127, {arg i;
+			keys[i].set(\release4, release4);
+		}
+		);
+		('release4: ').post; release4.postln;
+	}
+	//
+
+	//BANK5: OPMIX
+	{numcc == 21 && chancc == 4} {
 		mix1 = 10*(valcc/127);
 		for (0, 127, {arg i;
 			keys[i].set(\mix1, mix1);
@@ -432,7 +637,7 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 		('mix1: ').post; mix1.postln;
 	}
 
-	{numcc == 24 && chancc == 4} {
+	{numcc == 22 && chancc == 4} {
 		mix2 = 10*(valcc/127);
 		for (0, 127, {arg i;
 			keys[i].set(\mix2, mix2);
@@ -441,95 +646,153 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 		('mix2: ').post; mix2.postln;
 	}
 
+	{numcc == 23 && chancc == 4} {
+		mix3 = 10*(valcc/127);
+		for (0, 127, {arg i;
+			keys[i].set(\mix3, mix3);
+		}
+		);
+		('mix3: ').post; mix3.postln;
+	}
+
+	{numcc == 24 && chancc == 4} {
+		mix4 = 10*(valcc/127);
+		for (0, 127, {arg i;
+			keys[i].set(\mix4, mix4);
+		}
+		);
+		('mix4: ').post; mix4.postln;
+	}
 
 	{numcc == 25 && chancc == 4} {
-		filterFreq = 20000*(valcc/127);
+		peakLevel1 = 10*(valcc/127);
+		for (0, 127, {arg i;
+			keys[i].set(\peakLevel1, peakLevel1);
+		}
+		);
+		('peakLevel1: ').post; peakLevel1.postln;
+	}
+
+	{numcc == 26 && chancc == 4} {
+		peakLevel2 = 10*(valcc/127);
+		for (0, 127, {arg i;
+			keys[i].set(\peakLevel2, peakLevel2);
+		}
+		);
+		('peakLevel2: ').post; peakLevel2.postln;
+	}
+
+	{numcc == 27 && chancc == 4} {
+		peakLevel3 = 10*(valcc/127);
+		for (0, 127, {arg i;
+			keys[i].set(\peakLevel3, peakLevel3);
+		}
+		);
+		('peakLevel3: ').post; peakLevel3.postln;
+	}
+
+	{numcc == 28 && chancc == 4} {
+		peakLevel4 = 10*(valcc/127);
+		for (0, 127, {arg i;
+			keys[i].set(\peakLevel4, peakLevel4);
+		}
+		);
+		('peakLevel4: ').post; peakLevel4.postln;
+	}
+	//
+
+	//BANK 6: GLOBAL CONTROL
+
+	{numcc == 21 && chancc == 5} {
+		algorithm = 1+round(valcc/127);
+		('algorithm: ').post; algorithm.postln;
+	}
+
+
+	{numcc == 22 && chancc == 5} {
+		noise = 10*(valcc/127);
+		for (0, 127, {arg i;
+			keys[i].set(\noise, noise);
+		}
+		);
+		('noise: ').post; noise.postln;
+	}
+
+	{numcc == 23 && chancc == 5} {
 		case
 		{valcc < 42} {filterFreq = (100*valcc/42)+50}
 		{valcc < 85} {filterFreq = (850*((valcc-42)/42))+150}
 		{valcc < 128} {filterFreq = 17000*((valcc-84)/43)+1000};
-
-		for (0, 127, {arg i;
-			keys[i].set(\filterFreq, filterFreq+20);
-		}
-		);
 		lp.set(\freq,filterFreq);
 		('filterFreq: ').post; filterFreq.postln;
 	}
 
-	{numcc == 26 && chancc == 4} {
+	{numcc == 24 && chancc == 5} {
 		valcc = 127 - valcc;
 		case
 		{valcc < 42} {filterRes = 0.05*valcc/42+0.05}
 		{valcc < 100} {filterRes = 0.9*((valcc-42)/42)+0.1}
-		{valcc < 128} {filterRes = 10*((valcc-99)/28)+1};
-		for (0, 127, {arg i;
-			keys[i].set(\filterRes, filterRes);
-		}
-		);
+		{valcc < 128} {filterRes = 0*((valcc-99)/28)+1};
 		lp.set(\res, filterRes);
 		('filterRes: ').post; filterRes.postln;
 	}
 
 
 
-	{numcc == 27 && chancc == 4} {
+	{numcc == 27 && chancc == 5} {
 		analogFac = valcc/(127);
 		('analogFac: ').post; analogFac.postln;
 	}
 
-	{numcc == 28 && chancc == 4} {
+	{numcc == 28 && chancc == 5} {
 		master = (valcc/127);
-		for (0, 127, {arg i;
-			keys[i].set(\master, master);
-		}
-		);
+		li.set(\master, master);
 		('master: ').post; master.postln;
 	}
 	//
 
-	//BANK 4: EFFECTS
+	//BANK 7: EFFECTS
 
-	{numcc == 21 && chancc == 5} {
+	{numcc == 21 && chancc == 6} {
 		dwet = (valcc.linlin(0,127,0,1));
 		de.set(\wet, dwet);
 		('dwet: ').post; dwet.postln;
 	}
 
-	{numcc == 22 && chancc == 5} {
+	{numcc == 22 && chancc == 6} {
 		ddel = valcc.linlin(0,127,0.001,0.999);
 		de.set(\del, ddel);
 		('ddel: ').post; ddel.postln;
 	}
 
 
-	{numcc == 23 && chancc == 5} {
+	{numcc == 23 && chancc == 6} {
 		ddec = valcc.linlin(0,127,0.01,0.999);
 		de.set(\dec, ddec);
 		('ddec: ').post; ddec.postln;
 	}
 
 
-	{numcc == 24 && chancc == 5} {
+	{numcc == 24 && chancc == 6} {
 		rwet = (valcc/127);
 		re.set(\wet, rwet);
 		('rwet: ').post; rwet.postln;
 	}
 
-	{numcc == 25 && chancc == 5} {
+	{numcc == 25 && chancc == 6} {
 		rdel = (valcc.linlin(0,127,0.048,0.999));
 		re.set(\del, rdel);
 		('rdel: ').post; rdel.postln;
 	}
 
 
-	{numcc == 26 && chancc == 5} {
+	{numcc == 26 && chancc == 6} {
 		rdec = 10*(valcc/127);
 		re.set(\dec, rdec);
 		('rdec: ').post; rdec.postln;
 	}
 
-	{numcc == 27 && chancc == 5} {
+	{numcc == 27 && chancc == 6} {
 		lfoRate = 15*(valcc/127);
 
 		case
@@ -541,13 +804,60 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 		('lfoRate: ').post; lfoRate.postln;
 	}
 
-	{numcc == 28 && chancc == 5} {
+	{numcc == 28 && chancc == 6} {
 		lfoAmount = 0.99*(valcc/127);
 		lp.set(\amount, lfoAmount);
 		('lfoAmount: ').post; lfoAmount.postln;
 	}
 
 	//
+
+	// BANK 8: FILTER
+
+/*	{numcc == 24 && chancc == 6} {
+		case
+		{valcc < 42} {fdelay = 0.1*valcc/42+0}
+		{valcc < 85} {fdelay = 0.9*((valcc-42)/42)+0.1}
+		{valcc < 128} {fdelay = 9*((valcc-84)/43)+1};
+		lp.set(\delay, fdelay);
+		('fdelay: ').post; fdelay.postln;
+	}
+
+	{numcc == 25 && chancc == 6} {
+		case
+		{valcc < 42} {fattack = 0.1*valcc/42+0}
+		{valcc < 85} {fattack = 0.9*((valcc-42)/42)+0.1}
+		{valcc < 128} {fattack = 9*((valcc-84)/43)+1};
+		lp.set(\attack, fattack);
+		('fattack: ').post; fattack.postln;
+	}
+
+	{numcc == 26 && chancc == 6} {
+		case
+		{valcc < 42} {fdecay = 0.1*valcc/42+0}
+		{valcc < 85} {fdecay = 0.9*((valcc-42)/42)+0.1}
+		{valcc < 128} {fdecay = 9*((valcc-84)/43)+1};
+		lp.set(\decay, fdecay);
+		('fdecay: ').post; fdecay.postln;
+	}
+
+	{numcc == 27 && chancc == 6} {
+		fsustain = valcc/127;
+		lp.set(\sustain, fsustain);
+		('fsustain: ').post; fsustain.postln;
+	}
+
+	{numcc == 28 && chancc == 6} {
+		case
+		{valcc < 42} {frelease = 0.1*valcc/42+0}
+		{valcc < 85} {frelease = 0.9*((valcc-42)/42)+0.1}
+		{valcc < 128} {frelease = 9*((valcc-84)/43)+1};
+		lp.set(\release, frelease);
+		('frelease: ').post; frelease.postln;
+	}*/
+
+	//
+
 
 	;
 };
