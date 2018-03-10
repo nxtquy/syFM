@@ -27,6 +27,7 @@ var noise = 0, wave1 = 0, wave2 = 0, wave3 = 0, wave4 = 0, analogFac = 0;
 
 var algorithm = 0;
 var filterFreq = 10000, filterRes = 1, fdelay = 0.001, fattack = 0.01, fdecay = 0.3, fsustain = 1, frelease = 0.2;
+var hpFreq = 20, hpRes = 1;
 var master = 0.5;
 var lfoRate = 0.5, lfoAmount = 0;
 var dwet = 0, ddec = 0.01, ddel = 0.001;
@@ -866,6 +867,32 @@ SynthDef(\lowpass, {arg freq = 10000, amount = 0, rate = 5, res = 1, gate = 1, d
 	ReplaceOut.ar(0,effect); // Replace output
 }).add;
 
+  /////////////////////////////////
+ //       HIGHPASS FILTER        //
+/////////////////////////////////
+
+SynthDef(\highpass, {arg freq = 20, amount = 0, rate = 5, res = 1, gate = 1, delay = 0.001, attack = 0.01, decay = 0.3, sustain = 1, release = 0.2;
+	var input, effect, sine, env, cut;
+
+	//sine = SinOsc.kr(rate,0,log10(freq/2)*0.35*0.5*amount,(1-(log10(freq/2)*0.35*0.5*amount))); // LFO
+	//cut = sine*freq;
+	cut = freq;
+	cut = Clip.kr(cut, 20, 20000);
+	//cut = Lag.kr(cut,0.2); // Apply LFO and smooth
+
+	input = In.ar(0,1);
+	effect = HPF.ar(input, cut); //Low pass filter
+
+	//env = Env.dadsr(delay, attack, decay, sustain, release);
+	//effect = HPF.ar(input, freq, EnvGen.kr(env, gate, doneAction: 0));
+	//effect = input - effect;
+
+	//effect = EnvGen.kr(env, gate, doneAction: 2)*effect;
+
+
+	ReplaceOut.ar(0,effect); // Replace output
+}).add;
+
 
   /////////////////////////////////
  //           DELAY             //
@@ -953,6 +980,7 @@ ccs = Array.newClear(128);
 //Effects to add
 g = Group.basicNew(s,1);
 lp = Synth.tail(g, \lowpass);
+hp = Synth.tail(g, \highpass);
 de = Synth.tail(g, \delay);
 re = Synth.tail(g, \reverb);
 li = Synth.tail(g, \limiter);
@@ -1456,6 +1484,24 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 		('filterRes: ').post; filterRes.postln;
 	}
 
+	{numcc == 25 && chancc == 5} {
+		case
+		{valcc < 42} {hpFreq = (80*valcc/42)+20}
+		{valcc < 85} {hpFreq = (900*((valcc-42)/42))+100}
+		{valcc < 128} {hpFreq = 19000*((valcc-84)/43)+1000};
+		hp.set(\freq,hpFreq);
+		('hpFreq: ').post; hpFreq.postln;
+	}
+
+	{numcc == 26 && chancc == 5} {
+		valcc = 127 - valcc;
+		case
+		{valcc < 42} {hpRes = 0.05*valcc/42+0.05}
+		{valcc < 100} {hpRes = 0.9*((valcc-42)/42)+0.1}
+		{valcc < 128} {hpRes = 0*((valcc-99)/28)+1};
+		hp.set(\res, hpRes);
+		('hpRes: ').post; hpRes.postln;
+	}
 
 
 	{numcc == 27 && chancc == 5} {
