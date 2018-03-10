@@ -111,6 +111,106 @@ SynthDef(\sinpk2, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.00
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
 
 	x = x + y + z + w;
+	x = x*(1/sqrt(4));
+
+	//master volume and clip limit
+	x = LeakDC.ar(x,0.995,1,0);
+	out = (vel/127)*x;
+	Out.ar(0, out);
+
+}).add;
+
+//ALGORITHM 3
+SynthDef(\sinpk3, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.001, attack1 = 0.01, decay1 = 0.3, sustain1 = 0.5, release1 = 0.5, peakLevel1 = 1, curve1 = 0, bias1 = 0, mix2 = 5, delay2 = 0.001, attack2 = 0.01, decay2 = 3, sustain2 = 0.5, release2 = 0.5, peakLevel2 = 1, curve2 = 0, bias2 = 0, mix3 = 5, delay3 = 0.001, attack3 = 0.01, decay3 = 0.3, sustain3 = 0.5, release3 = 0.5, peakLevel3 = 1, curve3 = 0, bias3 = 0, mix4 = 5, delay4 = 0.001, attack4 = 0.01, decay4 = 0.3, sustain4 = 0.5, release4 = 0.5, peakLevel4 = 1, curve4 = 0, bias4 = 0, wave1 = 0, wave2 = 0, wave3 = 0, wave4 = 0, ratio2 = 1, coarse2 = 0, ratio1 = 1, coarse1 = 0, ratio3 = 1, coarse3 = 0, ratio4 = 1, coarse4 = 0, noise = 0, aF = 1;
+
+    var x, y, limited, out;
+	var env1 = Env.dadsr(delay1, attack1, decay1, sustain1, release1,peakLevel1,curve1,bias1);
+	var env2 = Env.dadsr(delay2, attack2, decay2, sustain2, release2, peakLevel2, curve2, bias2);
+	var env3 = Env.dadsr(delay3, attack3, decay3, sustain3, release3, peakLevel3, curve3, bias3);
+	var env4 = Env.dadsr(delay4, attack4, decay4, sustain4, release4, peakLevel4, curve4, bias4);
+
+	var freq1 = freq*(ratio1+coarse1*aF);
+	var freq2 = freq*(ratio2+coarse2*aF);
+	var freq3 = freq*(ratio3+coarse3*aF);
+	var freq4 = freq*(ratio4+coarse4*aF);
+
+	w = SinOsc.ar(freq4,0,1);
+	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
+	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w= (mix4/10)*w;
+	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
+
+	z = SinOsc.ar(freq3,w,1);
+	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, w, 0.5,1)]);
+	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, w, 1)]);
+	z = (mix3/10)*z;
+	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
+
+	y = SinOsc.ar(freq2,0,1);
+	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, 0, 0.5,1)]);
+	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, 0, 1)]);
+	y = (mix2/10)*y;
+	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
+
+
+	x = SinOsc.ar(freq1,y,1);
+	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, y, 0.5, 1)]);
+	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, y, 1)]);
+	x = (mix1/10)*x;
+	x = x + (aF*PinkNoise.ar(noise/10));
+    x = EnvGen.kr(env1, gate, doneAction: 2) * x;
+
+	x = x  + z;
+	x = x*(1/sqrt(2));
+
+	//master volume and clip limit
+	x = LeakDC.ar(x,0.995,1,0);
+	out = (vel/127)*x;
+	Out.ar(0, out);
+
+}).add;
+
+//ALGORITHM 4
+SynthDef(\sinpk4, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.001, attack1 = 0.01, decay1 = 0.3, sustain1 = 0.5, release1 = 0.5, peakLevel1 = 1, curve1 = 0, bias1 = 0, mix2 = 5, delay2 = 0.001, attack2 = 0.01, decay2 = 3, sustain2 = 0.5, release2 = 0.5, peakLevel2 = 1, curve2 = 0, bias2 = 0, mix3 = 5, delay3 = 0.001, attack3 = 0.01, decay3 = 0.3, sustain3 = 0.5, release3 = 0.5, peakLevel3 = 1, curve3 = 0, bias3 = 0, mix4 = 5, delay4 = 0.001, attack4 = 0.01, decay4 = 0.3, sustain4 = 0.5, release4 = 0.5, peakLevel4 = 1, curve4 = 0, bias4 = 0, wave1 = 0, wave2 = 0, wave3 = 0, wave4 = 0, ratio2 = 1, coarse2 = 0, ratio1 = 1, coarse1 = 0, ratio3 = 1, coarse3 = 0, ratio4 = 1, coarse4 = 0, noise = 0, aF = 1;
+
+    var x, y, limited, out;
+	var env1 = Env.dadsr(delay1, attack1, decay1, sustain1, release1,peakLevel1,curve1,bias1);
+	var env2 = Env.dadsr(delay2, attack2, decay2, sustain2, release2, peakLevel2, curve2, bias2);
+	var env3 = Env.dadsr(delay3, attack3, decay3, sustain3, release3, peakLevel3, curve3, bias3);
+	var env4 = Env.dadsr(delay4, attack4, decay4, sustain4, release4, peakLevel4, curve4, bias4);
+
+	var freq1 = freq*(ratio1+coarse1*aF);
+	var freq2 = freq*(ratio2+coarse2*aF);
+	var freq3 = freq*(ratio3+coarse3*aF);
+	var freq4 = freq*(ratio4+coarse4*aF);
+
+	w = SinOsc.ar(freq4,0,1);
+	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
+	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w= (mix4/10)*w;
+	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
+
+	z = SinOsc.ar(freq3,0,1);
+	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, 0, 0.5,1)]);
+	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, 0, 1)]);
+	z = (mix3/10)*z;
+	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
+
+	y = SinOsc.ar(freq2,0,1);
+	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, 0, 0.5,1)]);
+	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, 0, 1)]);
+	y = (mix2/10)*y;
+	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
+
+
+	x = SinOsc.ar(freq1,y+z+w,1);
+	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, y+z+w, 0.5, 1)]);
+	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, y+z+w, 1)]);
+	x = (mix1/10)*x;
+	x = x + (aF*PinkNoise.ar(noise/10));
+    x = EnvGen.kr(env1, gate, doneAction: 2) * x;
+
+	x = x;
 
 	//master volume and clip limit
 	x = LeakDC.ar(x,0.995,1,0);
@@ -120,17 +220,567 @@ SynthDef(\sinpk2, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.00
 }).add;
 
 
+//ALGORITHM 5
+SynthDef(\sinpk5, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.001, attack1 = 0.01, decay1 = 0.3, sustain1 = 0.5, release1 = 0.5, peakLevel1 = 1, curve1 = 0, bias1 = 0, mix2 = 5, delay2 = 0.001, attack2 = 0.01, decay2 = 3, sustain2 = 0.5, release2 = 0.5, peakLevel2 = 1, curve2 = 0, bias2 = 0, mix3 = 5, delay3 = 0.001, attack3 = 0.01, decay3 = 0.3, sustain3 = 0.5, release3 = 0.5, peakLevel3 = 1, curve3 = 0, bias3 = 0, mix4 = 5, delay4 = 0.001, attack4 = 0.01, decay4 = 0.3, sustain4 = 0.5, release4 = 0.5, peakLevel4 = 1, curve4 = 0, bias4 = 0, wave1 = 0, wave2 = 0, wave3 = 0, wave4 = 0, ratio2 = 1, coarse2 = 0, ratio1 = 1, coarse1 = 0, ratio3 = 1, coarse3 = 0, ratio4 = 1, coarse4 = 0, noise = 0, aF = 1;
+
+    var x, y, limited, out;
+	var env1 = Env.dadsr(delay1, attack1, decay1, sustain1, release1,peakLevel1,curve1,bias1);
+	var env2 = Env.dadsr(delay2, attack2, decay2, sustain2, release2, peakLevel2, curve2, bias2);
+	var env3 = Env.dadsr(delay3, attack3, decay3, sustain3, release3, peakLevel3, curve3, bias3);
+	var env4 = Env.dadsr(delay4, attack4, decay4, sustain4, release4, peakLevel4, curve4, bias4);
+
+	var freq1 = freq*(ratio1+coarse1*aF);
+	var freq2 = freq*(ratio2+coarse2*aF);
+	var freq3 = freq*(ratio3+coarse3*aF);
+	var freq4 = freq*(ratio4+coarse4*aF);
+
+	w = SinOsc.ar(freq4,0,1);
+	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
+	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w= (mix4/10)*w;
+	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
+
+	z = SinOsc.ar(freq3,w,1);
+	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, w, 0.5,1)]);
+	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, w, 1)]);
+	z = (mix3/10)*z;
+	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
+
+	y = SinOsc.ar(freq2,0,1);
+	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, 0, 0.5,1)]);
+	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, 0, 1)]);
+	y = (mix2/10)*y;
+	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
+
+
+	x = SinOsc.ar(freq1,y+z,1);
+	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, y+z, 0.5, 1)]);
+	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, y+z+w, 1)]);
+	x = (mix1/10)*x;
+	x = x + (aF*PinkNoise.ar(noise/10));
+    x = EnvGen.kr(env1, gate, doneAction: 2) * x;
+
+	x = x;
+
+	//master volume and clip limit
+	x = LeakDC.ar(x,0.995,1,0);
+	out = (vel/127)*x;
+	Out.ar(0, out);
+
+}).add;
+
+//ALGORITHM 6
+SynthDef(\sinpk6, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.001, attack1 = 0.01, decay1 = 0.3, sustain1 = 0.5, release1 = 0.5, peakLevel1 = 1, curve1 = 0, bias1 = 0, mix2 = 5, delay2 = 0.001, attack2 = 0.01, decay2 = 3, sustain2 = 0.5, release2 = 0.5, peakLevel2 = 1, curve2 = 0, bias2 = 0, mix3 = 5, delay3 = 0.001, attack3 = 0.01, decay3 = 0.3, sustain3 = 0.5, release3 = 0.5, peakLevel3 = 1, curve3 = 0, bias3 = 0, mix4 = 5, delay4 = 0.001, attack4 = 0.01, decay4 = 0.3, sustain4 = 0.5, release4 = 0.5, peakLevel4 = 1, curve4 = 0, bias4 = 0, wave1 = 0, wave2 = 0, wave3 = 0, wave4 = 0, ratio2 = 1, coarse2 = 0, ratio1 = 1, coarse1 = 0, ratio3 = 1, coarse3 = 0, ratio4 = 1, coarse4 = 0, noise = 0, aF = 1;
+
+    var x, y, limited, out;
+	var env1 = Env.dadsr(delay1, attack1, decay1, sustain1, release1,peakLevel1,curve1,bias1);
+	var env2 = Env.dadsr(delay2, attack2, decay2, sustain2, release2, peakLevel2, curve2, bias2);
+	var env3 = Env.dadsr(delay3, attack3, decay3, sustain3, release3, peakLevel3, curve3, bias3);
+	var env4 = Env.dadsr(delay4, attack4, decay4, sustain4, release4, peakLevel4, curve4, bias4);
+
+	var freq1 = freq*(ratio1+coarse1*aF);
+	var freq2 = freq*(ratio2+coarse2*aF);
+	var freq3 = freq*(ratio3+coarse3*aF);
+	var freq4 = freq*(ratio4+coarse4*aF);
+
+	w = SinOsc.ar(freq4,0,1);
+	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
+	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w= (mix4/10)*w;
+	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
+
+	z = SinOsc.ar(freq3,0,1);
+	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, 0, 0.5,1)]);
+	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, 0, 1)]);
+	z = (mix3/10)*z;
+	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
+
+	y = SinOsc.ar(freq2,0,1);
+	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, 0, 0.5,1)]);
+	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, 0, 1)]);
+	y = (mix2/10)*y;
+	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
+
+
+	x = SinOsc.ar(freq1,y,1);
+	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, y, 0.5, 1)]);
+	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, y, 1)]);
+	x = (mix1/10)*x;
+	x = x + (aF*PinkNoise.ar(noise/10));
+    x = EnvGen.kr(env1, gate, doneAction: 2) * x;
+
+	x = x + z + w;
+	x = x*(1/sqrt(3));
+
+	//master volume and clip limit
+	x = LeakDC.ar(x,0.995,1,0);
+	out = (vel/127)*x;
+	Out.ar(0, out);
+
+}).add;
+
+//ALGORITHM 7
+SynthDef(\sinpk7, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.001, attack1 = 0.01, decay1 = 0.3, sustain1 = 0.5, release1 = 0.5, peakLevel1 = 1, curve1 = 0, bias1 = 0, mix2 = 5, delay2 = 0.001, attack2 = 0.01, decay2 = 3, sustain2 = 0.5, release2 = 0.5, peakLevel2 = 1, curve2 = 0, bias2 = 0, mix3 = 5, delay3 = 0.001, attack3 = 0.01, decay3 = 0.3, sustain3 = 0.5, release3 = 0.5, peakLevel3 = 1, curve3 = 0, bias3 = 0, mix4 = 5, delay4 = 0.001, attack4 = 0.01, decay4 = 0.3, sustain4 = 0.5, release4 = 0.5, peakLevel4 = 1, curve4 = 0, bias4 = 0, wave1 = 0, wave2 = 0, wave3 = 0, wave4 = 0, ratio2 = 1, coarse2 = 0, ratio1 = 1, coarse1 = 0, ratio3 = 1, coarse3 = 0, ratio4 = 1, coarse4 = 0, noise = 0, aF = 1;
+
+    var x, y, limited, out;
+	var env1 = Env.dadsr(delay1, attack1, decay1, sustain1, release1,peakLevel1,curve1,bias1);
+	var env2 = Env.dadsr(delay2, attack2, decay2, sustain2, release2, peakLevel2, curve2, bias2);
+	var env3 = Env.dadsr(delay3, attack3, decay3, sustain3, release3, peakLevel3, curve3, bias3);
+	var env4 = Env.dadsr(delay4, attack4, decay4, sustain4, release4, peakLevel4, curve4, bias4);
+
+	var freq1 = freq*(ratio1+coarse1*aF);
+	var freq2 = freq*(ratio2+coarse2*aF);
+	var freq3 = freq*(ratio3+coarse3*aF);
+	var freq4 = freq*(ratio4+coarse4*aF);
+
+	w = SinOsc.ar(freq4,0,1);
+	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
+	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w= (mix4/10)*w;
+	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
+
+	z = SinOsc.ar(freq3,0,1);
+	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, 0, 0.5,1)]);
+	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, 0, 1)]);
+	z = (mix3/10)*z;
+	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
+
+	y = SinOsc.ar(freq2,z + w,1);
+	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, z+w, 0.5,1)]);
+	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, z+w, 1)]);
+	y = (mix2/10)*y;
+	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
+
+
+	x = SinOsc.ar(freq1,0,1);
+	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, 0, 0.5, 1)]);
+	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, 0, 1)]);
+	x = (mix1/10)*x;
+	x = x + (aF*PinkNoise.ar(noise/10));
+    x = EnvGen.kr(env1, gate, doneAction: 2) * x;
+
+	x = x + y;
+	x = x*(1/sqrt(2));
+
+	//master volume and clip limit
+	x = LeakDC.ar(x,0.995,1,0);
+	out = (vel/127)*x;
+	Out.ar(0, out);
+
+}).add;
+
+//ALGORITHM 8
+SynthDef(\sinpk8, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.001, attack1 = 0.01, decay1 = 0.3, sustain1 = 0.5, release1 = 0.5, peakLevel1 = 1, curve1 = 0, bias1 = 0, mix2 = 5, delay2 = 0.001, attack2 = 0.01, decay2 = 3, sustain2 = 0.5, release2 = 0.5, peakLevel2 = 1, curve2 = 0, bias2 = 0, mix3 = 5, delay3 = 0.001, attack3 = 0.01, decay3 = 0.3, sustain3 = 0.5, release3 = 0.5, peakLevel3 = 1, curve3 = 0, bias3 = 0, mix4 = 5, delay4 = 0.001, attack4 = 0.01, decay4 = 0.3, sustain4 = 0.5, release4 = 0.5, peakLevel4 = 1, curve4 = 0, bias4 = 0, wave1 = 0, wave2 = 0, wave3 = 0, wave4 = 0, ratio2 = 1, coarse2 = 0, ratio1 = 1, coarse1 = 0, ratio3 = 1, coarse3 = 0, ratio4 = 1, coarse4 = 0, noise = 0, aF = 1;
+
+    var x, y, limited, out;
+	var env1 = Env.dadsr(delay1, attack1, decay1, sustain1, release1,peakLevel1,curve1,bias1);
+	var env2 = Env.dadsr(delay2, attack2, decay2, sustain2, release2, peakLevel2, curve2, bias2);
+	var env3 = Env.dadsr(delay3, attack3, decay3, sustain3, release3, peakLevel3, curve3, bias3);
+	var env4 = Env.dadsr(delay4, attack4, decay4, sustain4, release4, peakLevel4, curve4, bias4);
+
+	var freq1 = freq*(ratio1+coarse1*aF);
+	var freq2 = freq*(ratio2+coarse2*aF);
+	var freq3 = freq*(ratio3+coarse3*aF);
+	var freq4 = freq*(ratio4+coarse4*aF);
+
+	w = SinOsc.ar(freq4,0,1);
+	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
+	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w= (mix4/10)*w;
+	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
+
+	z = SinOsc.ar(freq3,0,1);
+	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, 0, 0.5,1)]);
+	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, 0, 1)]);
+	z = (mix3/10)*z;
+	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
+
+	y = SinOsc.ar(freq2,z+w,1);
+	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, z+w, 0.5,1)]);
+	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, z+w, 1)]);
+	y = (mix2/10)*y;
+	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
+
+
+	x = SinOsc.ar(freq1,y,1);
+	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, y, 0.5, 1)]);
+	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, y, 1)]);
+	x = (mix1/10)*x;
+	x = x + (aF*PinkNoise.ar(noise/10));
+    x = EnvGen.kr(env1, gate, doneAction: 2) * x;
+
+	x = x;
+
+	//master volume and clip limit
+	x = LeakDC.ar(x,0.995,1,0);
+	out = (vel/127)*x;
+	Out.ar(0, out);
+
+}).add;
+
+//ALGORITHM 9
+SynthDef(\sinpk9, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.001, attack1 = 0.01, decay1 = 0.3, sustain1 = 0.5, release1 = 0.5, peakLevel1 = 1, curve1 = 0, bias1 = 0, mix2 = 5, delay2 = 0.001, attack2 = 0.01, decay2 = 3, sustain2 = 0.5, release2 = 0.5, peakLevel2 = 1, curve2 = 0, bias2 = 0, mix3 = 5, delay3 = 0.001, attack3 = 0.01, decay3 = 0.3, sustain3 = 0.5, release3 = 0.5, peakLevel3 = 1, curve3 = 0, bias3 = 0, mix4 = 5, delay4 = 0.001, attack4 = 0.01, decay4 = 0.3, sustain4 = 0.5, release4 = 0.5, peakLevel4 = 1, curve4 = 0, bias4 = 0, wave1 = 0, wave2 = 0, wave3 = 0, wave4 = 0, ratio2 = 1, coarse2 = 0, ratio1 = 1, coarse1 = 0, ratio3 = 1, coarse3 = 0, ratio4 = 1, coarse4 = 0, noise = 0, aF = 1;
+
+    var x, y, limited, out;
+	var env1 = Env.dadsr(delay1, attack1, decay1, sustain1, release1,peakLevel1,curve1,bias1);
+	var env2 = Env.dadsr(delay2, attack2, decay2, sustain2, release2, peakLevel2, curve2, bias2);
+	var env3 = Env.dadsr(delay3, attack3, decay3, sustain3, release3, peakLevel3, curve3, bias3);
+	var env4 = Env.dadsr(delay4, attack4, decay4, sustain4, release4, peakLevel4, curve4, bias4);
+
+	var freq1 = freq*(ratio1+coarse1*aF);
+	var freq2 = freq*(ratio2+coarse2*aF);
+	var freq3 = freq*(ratio3+coarse3*aF);
+	var freq4 = freq*(ratio4+coarse4*aF);
+
+	w = SinOsc.ar(freq4,0,1);
+	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
+	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w= (mix4/10)*w;
+	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
+
+	z = SinOsc.ar(freq3,0,1);
+	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, 0, 0.5,1)]);
+	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, 0, 1)]);
+	z = (mix3/10)*z;
+	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
+
+	y = SinOsc.ar(freq2,z+w,1);
+	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, z+w, 0.5,1)]);
+	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, z+w, 1)]);
+	y = (mix2/10)*y;
+	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
+
+
+	x = SinOsc.ar(freq1,z+w,1);
+	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, z+w, 0.5, 1)]);
+	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, z+w, 1)]);
+	x = (mix1/10)*x;
+	x = x + (aF*PinkNoise.ar(noise/10));
+    x = EnvGen.kr(env1, gate, doneAction: 2) * x;
+
+	x = x + y;
+	x = x*(1/sqrt(2));
+
+	//master volume and clip limit
+	x = LeakDC.ar(x,0.995,1,0);
+	out = (vel/127)*x;
+	Out.ar(0, out);
+
+}).add;
+
+//ALGORITHM 10
+SynthDef(\sinpk10, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.001, attack1 = 0.01, decay1 = 0.3, sustain1 = 0.5, release1 = 0.5, peakLevel1 = 1, curve1 = 0, bias1 = 0, mix2 = 5, delay2 = 0.001, attack2 = 0.01, decay2 = 3, sustain2 = 0.5, release2 = 0.5, peakLevel2 = 1, curve2 = 0, bias2 = 0, mix3 = 5, delay3 = 0.001, attack3 = 0.01, decay3 = 0.3, sustain3 = 0.5, release3 = 0.5, peakLevel3 = 1, curve3 = 0, bias3 = 0, mix4 = 5, delay4 = 0.001, attack4 = 0.01, decay4 = 0.3, sustain4 = 0.5, release4 = 0.5, peakLevel4 = 1, curve4 = 0, bias4 = 0, wave1 = 0, wave2 = 0, wave3 = 0, wave4 = 0, ratio2 = 1, coarse2 = 0, ratio1 = 1, coarse1 = 0, ratio3 = 1, coarse3 = 0, ratio4 = 1, coarse4 = 0, noise = 0, aF = 1;
+
+    var x, y, limited, out;
+	var env1 = Env.dadsr(delay1, attack1, decay1, sustain1, release1,peakLevel1,curve1,bias1);
+	var env2 = Env.dadsr(delay2, attack2, decay2, sustain2, release2, peakLevel2, curve2, bias2);
+	var env3 = Env.dadsr(delay3, attack3, decay3, sustain3, release3, peakLevel3, curve3, bias3);
+	var env4 = Env.dadsr(delay4, attack4, decay4, sustain4, release4, peakLevel4, curve4, bias4);
+
+	var freq1 = freq*(ratio1+coarse1*aF);
+	var freq2 = freq*(ratio2+coarse2*aF);
+	var freq3 = freq*(ratio3+coarse3*aF);
+	var freq4 = freq*(ratio4+coarse4*aF);
+
+	w = SinOsc.ar(freq4,0,1);
+	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
+	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w= (mix4/10)*w;
+	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
+
+	z = SinOsc.ar(freq3,w,1);
+	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, w, 0.5,1)]);
+	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, w, 1)]);
+	z = (mix3/10)*z;
+	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
+
+	y = SinOsc.ar(freq2,w,1);
+	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, w, 0.5,1)]);
+	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, w, 1)]);
+	y = (mix2/10)*y;
+	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
+
+
+	x = SinOsc.ar(freq1,w,1);
+	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, w, 0.5, 1)]);
+	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, w, 1)]);
+	x = (mix1/10)*x;
+	x = x + (aF*PinkNoise.ar(noise/10));
+    x = EnvGen.kr(env1, gate, doneAction: 2) * x;
+
+	x = x + y + z;
+	x = x*(1/sqrt(3));
+
+	//master volume and clip limit
+	x = LeakDC.ar(x,0.995,1,0);
+	out = (vel/127)*x;
+	Out.ar(0, out);
+
+}).add;
+
+//ALGORITHM 11
+SynthDef(\sinpk11, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.001, attack1 = 0.01, decay1 = 0.3, sustain1 = 0.5, release1 = 0.5, peakLevel1 = 1, curve1 = 0, bias1 = 0, mix2 = 5, delay2 = 0.001, attack2 = 0.01, decay2 = 3, sustain2 = 0.5, release2 = 0.5, peakLevel2 = 1, curve2 = 0, bias2 = 0, mix3 = 5, delay3 = 0.001, attack3 = 0.01, decay3 = 0.3, sustain3 = 0.5, release3 = 0.5, peakLevel3 = 1, curve3 = 0, bias3 = 0, mix4 = 5, delay4 = 0.001, attack4 = 0.01, decay4 = 0.3, sustain4 = 0.5, release4 = 0.5, peakLevel4 = 1, curve4 = 0, bias4 = 0, wave1 = 0, wave2 = 0, wave3 = 0, wave4 = 0, ratio2 = 1, coarse2 = 0, ratio1 = 1, coarse1 = 0, ratio3 = 1, coarse3 = 0, ratio4 = 1, coarse4 = 0, noise = 0, aF = 1;
+
+    var x, y, limited, out;
+	var env1 = Env.dadsr(delay1, attack1, decay1, sustain1, release1,peakLevel1,curve1,bias1);
+	var env2 = Env.dadsr(delay2, attack2, decay2, sustain2, release2, peakLevel2, curve2, bias2);
+	var env3 = Env.dadsr(delay3, attack3, decay3, sustain3, release3, peakLevel3, curve3, bias3);
+	var env4 = Env.dadsr(delay4, attack4, decay4, sustain4, release4, peakLevel4, curve4, bias4);
+
+	var freq1 = freq*(ratio1+coarse1*aF);
+	var freq2 = freq*(ratio2+coarse2*aF);
+	var freq3 = freq*(ratio3+coarse3*aF);
+	var freq4 = freq*(ratio4+coarse4*aF);
+
+	w = SinOsc.ar(freq4,0,1);
+	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
+	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w= (mix4/10)*w;
+	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
+
+	z = SinOsc.ar(freq3,w,1);
+	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, w, 0.5,1)]);
+	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, w, 1)]);
+	z = (mix3/10)*z;
+	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
+
+	y = SinOsc.ar(freq2,w,1);
+	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, w, 0.5,1)]);
+	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, w, 1)]);
+	y = (mix2/10)*y;
+	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
+
+
+	x = SinOsc.ar(freq1,0,1);
+	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, 0, 0.5, 1)]);
+	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, 0, 1)]);
+	x = (mix1/10)*x;
+	x = x + (aF*PinkNoise.ar(noise/10));
+    x = EnvGen.kr(env1, gate, doneAction: 2) * x;
+
+	x = x + y + z;
+	x = x*(1/sqrt(3));
+
+	//master volume and clip limit
+	x = LeakDC.ar(x,0.995,1,0);
+	out = (vel/127)*x;
+	Out.ar(0, out);
+
+}).add;
+
+//ALGORITHM 12
+SynthDef(\sinpk12, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.001, attack1 = 0.01, decay1 = 0.3, sustain1 = 0.5, release1 = 0.5, peakLevel1 = 1, curve1 = 0, bias1 = 0, mix2 = 5, delay2 = 0.001, attack2 = 0.01, decay2 = 3, sustain2 = 0.5, release2 = 0.5, peakLevel2 = 1, curve2 = 0, bias2 = 0, mix3 = 5, delay3 = 0.001, attack3 = 0.01, decay3 = 0.3, sustain3 = 0.5, release3 = 0.5, peakLevel3 = 1, curve3 = 0, bias3 = 0, mix4 = 5, delay4 = 0.001, attack4 = 0.01, decay4 = 0.3, sustain4 = 0.5, release4 = 0.5, peakLevel4 = 1, curve4 = 0, bias4 = 0, wave1 = 0, wave2 = 0, wave3 = 0, wave4 = 0, ratio2 = 1, coarse2 = 0, ratio1 = 1, coarse1 = 0, ratio3 = 1, coarse3 = 0, ratio4 = 1, coarse4 = 0, noise = 0, aF = 1;
+
+    var x, y, limited, out;
+	var env1 = Env.dadsr(delay1, attack1, decay1, sustain1, release1,peakLevel1,curve1,bias1);
+	var env2 = Env.dadsr(delay2, attack2, decay2, sustain2, release2, peakLevel2, curve2, bias2);
+	var env3 = Env.dadsr(delay3, attack3, decay3, sustain3, release3, peakLevel3, curve3, bias3);
+	var env4 = Env.dadsr(delay4, attack4, decay4, sustain4, release4, peakLevel4, curve4, bias4);
+
+	var freq1 = freq*(ratio1+coarse1*aF);
+	var freq2 = freq*(ratio2+coarse2*aF);
+	var freq3 = freq*(ratio3+coarse3*aF);
+	var freq4 = freq*(ratio4+coarse4*aF);
+
+	w = SinOsc.ar(freq4,0,1);
+	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
+	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w= (mix4/10)*w;
+	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
+
+	z = SinOsc.ar(freq3,0,1);
+	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, 0, 0.5,1)]);
+	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, 0, 1)]);
+	z = (mix3/10)*z;
+	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
+
+	y = SinOsc.ar(freq2,z+w,1);
+	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, z+w, 0.5,1)]);
+	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, z+w, 1)]);
+	y = (mix2/10)*y;
+	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
+
+
+	x = SinOsc.ar(freq1,z,1);
+	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, z, 0.5, 1)]);
+	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, z, 1)]);
+	x = (mix1/10)*x;
+	x = x + (aF*PinkNoise.ar(noise/10));
+    x = EnvGen.kr(env1, gate, doneAction: 2) * x;
+
+	x = x + y;
+	x = x*(1/sqrt(2));
+
+	//master volume and clip limit
+	x = LeakDC.ar(x,0.995,1,0);
+	out = (vel/127)*x;
+	Out.ar(0, out);
+
+}).add;
+
+//ALGORITHM 13
+SynthDef(\sinpk13, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.001, attack1 = 0.01, decay1 = 0.3, sustain1 = 0.5, release1 = 0.5, peakLevel1 = 1, curve1 = 0, bias1 = 0, mix2 = 5, delay2 = 0.001, attack2 = 0.01, decay2 = 3, sustain2 = 0.5, release2 = 0.5, peakLevel2 = 1, curve2 = 0, bias2 = 0, mix3 = 5, delay3 = 0.001, attack3 = 0.01, decay3 = 0.3, sustain3 = 0.5, release3 = 0.5, peakLevel3 = 1, curve3 = 0, bias3 = 0, mix4 = 5, delay4 = 0.001, attack4 = 0.01, decay4 = 0.3, sustain4 = 0.5, release4 = 0.5, peakLevel4 = 1, curve4 = 0, bias4 = 0, wave1 = 0, wave2 = 0, wave3 = 0, wave4 = 0, ratio2 = 1, coarse2 = 0, ratio1 = 1, coarse1 = 0, ratio3 = 1, coarse3 = 0, ratio4 = 1, coarse4 = 0, noise = 0, aF = 1;
+
+    var x, y, limited, out;
+	var env1 = Env.dadsr(delay1, attack1, decay1, sustain1, release1,peakLevel1,curve1,bias1);
+	var env2 = Env.dadsr(delay2, attack2, decay2, sustain2, release2, peakLevel2, curve2, bias2);
+	var env3 = Env.dadsr(delay3, attack3, decay3, sustain3, release3, peakLevel3, curve3, bias3);
+	var env4 = Env.dadsr(delay4, attack4, decay4, sustain4, release4, peakLevel4, curve4, bias4);
+
+	var freq1 = freq*(ratio1+coarse1*aF);
+	var freq2 = freq*(ratio2+coarse2*aF);
+	var freq3 = freq*(ratio3+coarse3*aF);
+	var freq4 = freq*(ratio4+coarse4*aF);
+
+	w = SinOsc.ar(freq4,0,1);
+	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
+	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w= (mix4/10)*w;
+	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
+
+	z = SinOsc.ar(freq3,0,1);
+	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, 0, 0.5,1)]);
+	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, 0, 1)]);
+	z = (mix3/10)*z;
+	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
+
+	y = SinOsc.ar(freq2,z+w,1);
+	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, z+w, 0.5,1)]);
+	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, z+w, 1)]);
+	y = (mix2/10)*y;
+	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
+
+
+	x = SinOsc.ar(freq1,0,1);
+	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, 0, 0.5, 1)]);
+	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, 0, 1)]);
+	x = (mix1/10)*x;
+	x = x + (aF*PinkNoise.ar(noise/10));
+    x = EnvGen.kr(env1, gate, doneAction: 2) * x;
+
+	x = x + y;
+	x = x*(1/sqrt(2));
+
+	//master volume and clip limit
+	x = LeakDC.ar(x,0.995,1,0);
+	out = (vel/127)*x;
+	Out.ar(0, out);
+
+}).add;
+
+//ALGORITHM 14
+SynthDef(\sinpk14, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.001, attack1 = 0.01, decay1 = 0.3, sustain1 = 0.5, release1 = 0.5, peakLevel1 = 1, curve1 = 0, bias1 = 0, mix2 = 5, delay2 = 0.001, attack2 = 0.01, decay2 = 3, sustain2 = 0.5, release2 = 0.5, peakLevel2 = 1, curve2 = 0, bias2 = 0, mix3 = 5, delay3 = 0.001, attack3 = 0.01, decay3 = 0.3, sustain3 = 0.5, release3 = 0.5, peakLevel3 = 1, curve3 = 0, bias3 = 0, mix4 = 5, delay4 = 0.001, attack4 = 0.01, decay4 = 0.3, sustain4 = 0.5, release4 = 0.5, peakLevel4 = 1, curve4 = 0, bias4 = 0, wave1 = 0, wave2 = 0, wave3 = 0, wave4 = 0, ratio2 = 1, coarse2 = 0, ratio1 = 1, coarse1 = 0, ratio3 = 1, coarse3 = 0, ratio4 = 1, coarse4 = 0, noise = 0, aF = 1;
+
+    var x, y, limited, out;
+	var env1 = Env.dadsr(delay1, attack1, decay1, sustain1, release1,peakLevel1,curve1,bias1);
+	var env2 = Env.dadsr(delay2, attack2, decay2, sustain2, release2, peakLevel2, curve2, bias2);
+	var env3 = Env.dadsr(delay3, attack3, decay3, sustain3, release3, peakLevel3, curve3, bias3);
+	var env4 = Env.dadsr(delay4, attack4, decay4, sustain4, release4, peakLevel4, curve4, bias4);
+
+	var freq1 = freq*(ratio1+coarse1*aF);
+	var freq2 = freq*(ratio2+coarse2*aF);
+	var freq3 = freq*(ratio3+coarse3*aF);
+	var freq4 = freq*(ratio4+coarse4*aF);
+
+	w = SinOsc.ar(freq4,0,1);
+	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
+	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w= (mix4/10)*w;
+	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
+
+	z = SinOsc.ar(freq3,w,1);
+	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, w, 0.5,1)]);
+	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, w, 1)]);
+	z = (mix3/10)*z;
+	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
+
+	y = SinOsc.ar(freq2,w,1);
+	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, w, 0.5,1)]);
+	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, w, 1)]);
+	y = (mix2/10)*y;
+	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
+
+
+	x = SinOsc.ar(freq1,y+z,1);
+	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, y+z, 0.5, 1)]);
+	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, y+z, 1)]);
+	x = (mix1/10)*x;
+	x = x + (aF*PinkNoise.ar(noise/10));
+    x = EnvGen.kr(env1, gate, doneAction: 2) * x;
+
+	x = x;
+
+	//master volume and clip limit
+	x = LeakDC.ar(x,0.995,1,0);
+	out = (vel/127)*x;
+	Out.ar(0, out);
+
+}).add;
+
+//ALGORITHM 15
+SynthDef(\sinpk15, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.001, attack1 = 0.01, decay1 = 0.3, sustain1 = 0.5, release1 = 0.5, peakLevel1 = 1, curve1 = 0, bias1 = 0, mix2 = 5, delay2 = 0.001, attack2 = 0.01, decay2 = 3, sustain2 = 0.5, release2 = 0.5, peakLevel2 = 1, curve2 = 0, bias2 = 0, mix3 = 5, delay3 = 0.001, attack3 = 0.01, decay3 = 0.3, sustain3 = 0.5, release3 = 0.5, peakLevel3 = 1, curve3 = 0, bias3 = 0, mix4 = 5, delay4 = 0.001, attack4 = 0.01, decay4 = 0.3, sustain4 = 0.5, release4 = 0.5, peakLevel4 = 1, curve4 = 0, bias4 = 0, wave1 = 0, wave2 = 0, wave3 = 0, wave4 = 0, ratio2 = 1, coarse2 = 0, ratio1 = 1, coarse1 = 0, ratio3 = 1, coarse3 = 0, ratio4 = 1, coarse4 = 0, noise = 0, aF = 1;
+
+    var x, y, limited, out;
+	var env1 = Env.dadsr(delay1, attack1, decay1, sustain1, release1,peakLevel1,curve1,bias1);
+	var env2 = Env.dadsr(delay2, attack2, decay2, sustain2, release2, peakLevel2, curve2, bias2);
+	var env3 = Env.dadsr(delay3, attack3, decay3, sustain3, release3, peakLevel3, curve3, bias3);
+	var env4 = Env.dadsr(delay4, attack4, decay4, sustain4, release4, peakLevel4, curve4, bias4);
+
+	var freq1 = freq*(ratio1+coarse1*aF);
+	var freq2 = freq*(ratio2+coarse2*aF);
+	var freq3 = freq*(ratio3+coarse3*aF);
+	var freq4 = freq*(ratio4+coarse4*aF);
+
+	w = SinOsc.ar(freq4,0,1);
+	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
+	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w= (mix4/10)*w;
+	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
+
+	z = SinOsc.ar(freq3,w,1);
+	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, w, 0.5,1)]);
+	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, w, 1)]);
+	z = (mix3/10)*z;
+	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
+
+	y = SinOsc.ar(freq2,w,1);
+	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, w, 0.5,1)]);
+	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, w, 1)]);
+	y = (mix2/10)*y;
+	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
+
+
+	x = SinOsc.ar(freq1,y,1);
+	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, y, 0.5, 1)]);
+	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, y, 1)]);
+	x = (mix1/10)*x;
+	x = x + (aF*PinkNoise.ar(noise/10));
+    x = EnvGen.kr(env1, gate, doneAction: 2) * x;
+
+	x = x + z;
+	x = x*(1/sqrt(2));
+
+	//master volume and clip limit
+	x = LeakDC.ar(x,0.995,1,0);
+	out = (vel/127)*x;
+	Out.ar(0, out);
+
+}).add;
+
   /////////////////////////////////
  //       LOWPASS FILTER        //
 /////////////////////////////////
 
 SynthDef(\lowpass, {arg freq = 10000, amount = 0, rate = 5, res = 1, gate = 1, delay = 0.001, attack = 0.01, decay = 0.3, sustain = 1, release = 0.2;
-	var input, effect, sine, env;
+	var input, effect, sine, env, cut;
 
-	sine = SinOsc.kr(rate,0,0.5*amount,1); // LFO
+	sine = SinOsc.kr(rate,0,log10(freq/2)*0.35*0.5*amount,(1-(log10(freq/2)*0.35*0.5*amount))); // LFO
+	cut = sine*freq;
+	cut = Clip.kr(cut, 20, 20000);
+	//cut = Lag.kr(cut,0.2); // Apply LFO and smooth
 
 	input = In.ar(0,1);
-	effect = LPF.ar(input, Lag.kr((sine)*freq,0.2)); // Apply LFO and smooth
+	effect = LPF.ar(input, cut); //Low pass filter
 
 	//env = Env.dadsr(delay, attack, decay, sustain, release);
 	//effect = HPF.ar(input, freq, EnvGen.kr(env, gate, doneAction: 0));
@@ -227,7 +877,7 @@ var ratio3 = 1, coarse3 = 0, peakLevel3 = 1, mix3 = 5, delay3 = 0.001, attack3 =
 var ratio4 = 1, coarse4 = 0, peakLevel4 = 1, mix4 = 5, delay4 = 0.001, attack4 = 0.01, decay4 = 0.3, sustain4 = 0.5, release4 = 0.5;
 var noise = 0, wave1 = 0, wave2 = 0, wave3 = 0, wave4 = 0, analogFac = 0;
 
-var algorithm = 1;
+var algorithm = 0;
 var filterFreq = 10000, filterRes = 1, fdelay = 0.001, fattack = 0.01, fdecay = 0.3, fsustain = 1, frelease = 0.2;
 var master = 0.5;
 var lfoRate = 0.5, lfoAmount = 0;
@@ -265,8 +915,23 @@ li = Synth.tail(g, \limiter);
 	//('note analog factor: ').post;aF.postln;
 
 	case
-	{algorithm == 1} {synthN =\sinpk}
-	{algorithm == 2} {synthN = \sinpk2};
+	{algorithm == 0} {synthN =\sinpk}
+	{algorithm == 1} {synthN = \sinpk2}
+	{algorithm == 2} {synthN = \sinpk3}
+	{algorithm == 3} {synthN = \sinpk4}
+	{algorithm == 4} {synthN = \sinpk5}
+	{algorithm == 5} {synthN = \sinpk6}
+	{algorithm == 6} {synthN = \sinpk7}
+	{algorithm == 7} {synthN = \sinpk8}
+	{algorithm == 8} {synthN =\sinpk9}
+	{algorithm == 9} {synthN = \sinpk10}
+	{algorithm == 10} {synthN = \sinpk11}
+	{algorithm == 11} {synthN = \sinpk12}
+	{algorithm == 12} {synthN = \sinpk13}
+	{algorithm == 13} {synthN = \sinpk14}
+	{algorithm == 14} {synthN = \sinpk15}
+
+	;
 
 	node = Synth.head(g,synthN, [\freq, num.midicps, \vel, val, \ratio1, ratio1, \coarse1, coarse1, \ratio2, ratio2, \coarse2, coarse2, \ratio3, ratio3, \coarse3, coarse3, \ratio4, ratio4, \coarse4, coarse4, \mix1, mix1, \peakLevel1, peakLevel1, \delay1, delay1, \attack1, attack1, \decay1, decay1, \sustain1, sustain1, \release1, release1, \mix2, mix2, \peakLevel2, peakLevel2, \delay2, delay2, \attack2, attack2, \decay2, decay2, \sustain2, sustain2, \release2, release2, \mix3, mix3, \peakLevel3, peakLevel3, \delay3, delay3, \attack3, attack3, \decay3, decay3, \sustain3, sustain3, \release3, release3, \mix4, mix4, \peakLevel4, peakLevel4, \delay4, delay4, \attack4, attack4, \decay4, decay4, \sustain4, sustain4, \release4, release4, \wave1, wave1, \wave2, wave2, \wave3, wave3, \wave4, wave4, \noise, noise, \aF, aF]);
 
@@ -704,7 +1369,7 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 	//BANK 6: GLOBAL CONTROL
 
 	{numcc == 21 && chancc == 5} {
-		algorithm = 1+round(valcc/127);
+			algorithm = floor((valcc/127)*14);
 		('algorithm: ').post; algorithm.postln;
 	}
 
@@ -720,9 +1385,9 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 
 	{numcc == 23 && chancc == 5} {
 		case
-		{valcc < 42} {filterFreq = (100*valcc/42)+50}
-		{valcc < 85} {filterFreq = (850*((valcc-42)/42))+150}
-		{valcc < 128} {filterFreq = 17000*((valcc-84)/43)+1000};
+		{valcc < 42} {filterFreq = (80*valcc/42)+20}
+		{valcc < 85} {filterFreq = (900*((valcc-42)/42))+100}
+		{valcc < 128} {filterFreq = 19000*((valcc-84)/43)+1000};
 		lp.set(\freq,filterFreq);
 		('filterFreq: ').post; filterFreq.postln;
 	}
