@@ -17,10 +17,35 @@ MIDIIn.connectAll;
 )
 
 
+
+(
+var ratio1 = 1, coarse1 = 0, peakLevel1 = 1, mix1=5, delay1 = 0.001, attack1=0.01, decay1 = 0.3, sustain1=0.5, release1=0.5;
+var ratio2 = 1, coarse2 = 0, peakLevel2 = 1, mix2=5, delay2 = 0.001, attack2=0.01, decay2 = 0.3, sustain2=0.5, release2=0.5;
+var ratio3 = 1, coarse3 = 0, peakLevel3 = 1, mix3 = 5, delay3 = 0.001, attack3 = 0.01, decay3 = 0.3, sustain3 = 0.5, release3 = 0.5;
+var ratio4 = 1, coarse4 = 0, peakLevel4 = 1, mix4 = 5, delay4 = 0.001, attack4 = 0.01, decay4 = 0.3, sustain4 = 0.5, release4 = 0.5;
+var noise = 0, wave1 = 0, wave2 = 0, wave3 = 0, wave4 = 0, analogFac = 0;
+
+var algorithm = 0;
+var filterFreq = 10000, filterRes = 1, fdelay = 0.001, fattack = 0.01, fdecay = 0.3, fsustain = 1, frelease = 0.2;
+var master = 0.5;
+var lfoRate = 0.5, lfoAmount = 0;
+var dwet = 0, ddec = 0.01, ddel = 0.001;
+var rdec = 2, rdel = 0.048, rwet = 0;
+
+
+var ccres = 127;
+var aF = 1;
+
+var lp, hp, de, li, re;
+
+var synthN = \sinpk;
+var keys;
+var ccs;
+
 //-----------------------------SYNTH DEFINITION ------------------------------//
 
 //Define Synth to be played (4 oscillators)
-(
+
 //https://carlcolglazier.com/notes/acoustics/midi-instrument-control-supercollider/
 
 //Algorithm 1
@@ -111,7 +136,7 @@ SynthDef(\sinpk2, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.00
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
 
 	x = x + y + z + w;
-	x = x*(1/sqrt(4));
+	x = x*((1/sqrt(2))**3);
 
 	//master volume and clip limit
 	x = LeakDC.ar(x,0.995,1,0);
@@ -310,7 +335,7 @@ SynthDef(\sinpk6, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.00
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
 
 	x = x + z + w;
-	x = x*(1/sqrt(3));
+	x = x*((1/sqrt(2))**2);
 
 	//master volume and clip limit
 	x = LeakDC.ar(x,0.995,1,0);
@@ -509,7 +534,7 @@ SynthDef(\sinpk10, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.0
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
 
 	x = x + y + z;
-	x = x*(1/sqrt(3));
+	x = x*((1/sqrt(2))**2);
 
 	//master volume and clip limit
 	x = LeakDC.ar(x,0.995,1,0);
@@ -559,7 +584,7 @@ SynthDef(\sinpk11, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.0
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
 
 	x = x + y + z;
-	x = x*(1/sqrt(3));
+	x = x*((1/sqrt(2))**2);
 
 	//master volume and clip limit
 	x = LeakDC.ar(x,0.995,1,0);
@@ -767,6 +792,55 @@ SynthDef(\sinpk15, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.0
 
 }).add;
 
+//ALGORITHM 16
+SynthDef(\sinpk16, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.001, attack1 = 0.01, decay1 = 0.3, sustain1 = 0.5, release1 = 0.5, peakLevel1 = 1, curve1 = 0, bias1 = 0, mix2 = 5, delay2 = 0.001, attack2 = 0.01, decay2 = 3, sustain2 = 0.5, release2 = 0.5, peakLevel2 = 1, curve2 = 0, bias2 = 0, mix3 = 5, delay3 = 0.001, attack3 = 0.01, decay3 = 0.3, sustain3 = 0.5, release3 = 0.5, peakLevel3 = 1, curve3 = 0, bias3 = 0, mix4 = 5, delay4 = 0.001, attack4 = 0.01, decay4 = 0.3, sustain4 = 0.5, release4 = 0.5, peakLevel4 = 1, curve4 = 0, bias4 = 0, wave1 = 0, wave2 = 0, wave3 = 0, wave4 = 0, ratio2 = 1, coarse2 = 0, ratio1 = 1, coarse1 = 0, ratio3 = 1, coarse3 = 0, ratio4 = 1, coarse4 = 0, noise = 0, aF = 1;
+
+    var x, y, limited, out;
+	var env1 = Env.dadsr(delay1, attack1, decay1, sustain1, release1,peakLevel1,curve1,bias1);
+	var env2 = Env.dadsr(delay2, attack2, decay2, sustain2, release2, peakLevel2, curve2, bias2);
+	var env3 = Env.dadsr(delay3, attack3, decay3, sustain3, release3, peakLevel3, curve3, bias3);
+	var env4 = Env.dadsr(delay4, attack4, decay4, sustain4, release4, peakLevel4, curve4, bias4);
+
+	var freq1 = freq*(ratio1+coarse1*aF);
+	var freq2 = freq*(ratio2+coarse2*aF);
+	var freq3 = freq*(ratio3+coarse3*aF);
+	var freq4 = freq*(ratio4+coarse4*aF);
+
+	w = SinOsc.ar(freq4,0,1);
+	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
+	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w= (mix4/10)*w;
+	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
+
+	z = SinOsc.ar(freq3,w,1);
+	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, w, 0.5,1)]);
+	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, w, 1)]);
+	z = (mix3/10)*z;
+	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
+
+	y = SinOsc.ar(freq2,z,1);
+	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, z, 0.5,1)]);
+	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, z, 1)]);
+	y = (mix2/10)*y;
+	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
+
+
+	x = SinOsc.ar(freq1,y+w,1);
+	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, y+w, 0.5, 1)]);
+	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, y+w, 1)]);
+	x = (mix1/10)*x;
+	x = x + (aF*PinkNoise.ar(noise/10));
+    x = EnvGen.kr(env1, gate, doneAction: 2) * x;
+
+	x = x;
+
+	//master volume and clip limit
+	x = LeakDC.ar(x,0.995,1,0);
+	out = (vel/127)*x;
+	Out.ar(0, out);
+
+}).add;
+
   /////////////////////////////////
  //       LOWPASS FILTER        //
 /////////////////////////////////
@@ -858,7 +932,7 @@ SynthDef(\limiter, {arg master = 0.5;
   ReplaceOut.ar(0,effect); // Replace output
 }).add;
 
-)
+
 
 
 
@@ -869,30 +943,9 @@ SynthDef(\limiter, {arg master = 0.5;
 
 //-----------------------------MIDI PARSING ------------------------------//
 
-(
+
 // https://gist.github.com/umbrellaprocess/973d2aa16e95bf329ee2
-var ratio1 = 1, coarse1 = 0, peakLevel1 = 1, mix1=5, delay1 = 0.001, attack1=0.01, decay1 = 0.3, sustain1=0.5, release1=0.5;
-var ratio2 = 1, coarse2 = 0, peakLevel2 = 1, mix2=5, delay2 = 0.001, attack2=0.01, decay2 = 0.3, sustain2=0.5, release2=0.5;
-var ratio3 = 1, coarse3 = 0, peakLevel3 = 1, mix3 = 5, delay3 = 0.001, attack3 = 0.01, decay3 = 0.3, sustain3 = 0.5, release3 = 0.5;
-var ratio4 = 1, coarse4 = 0, peakLevel4 = 1, mix4 = 5, delay4 = 0.001, attack4 = 0.01, decay4 = 0.3, sustain4 = 0.5, release4 = 0.5;
-var noise = 0, wave1 = 0, wave2 = 0, wave3 = 0, wave4 = 0, analogFac = 0;
 
-var algorithm = 0;
-var filterFreq = 10000, filterRes = 1, fdelay = 0.001, fattack = 0.01, fdecay = 0.3, fsustain = 1, frelease = 0.2;
-var master = 0.5;
-var lfoRate = 0.5, lfoAmount = 0;
-var dwet = 0, ddec = 0.01, ddel = 0.001;
-var rdec = 2, rdel = 0.048, rwet = 0;
-
-
-var ccres = 127;
-var aF = 1;
-
-var lp, hp, de, li, re;
-
-var synthN = \sinpk;
-var keys;
-var ccs;
 keys = Array.newClear(128);
 ccs = Array.newClear(128);
 
@@ -930,6 +983,7 @@ li = Synth.tail(g, \limiter);
 	{algorithm == 12} {synthN = \sinpk13}
 	{algorithm == 13} {synthN = \sinpk14}
 	{algorithm == 14} {synthN = \sinpk15}
+	{algorithm == 15} {synthN = \sinpk16}
 
 	;
 
@@ -1369,7 +1423,7 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 	//BANK 6: GLOBAL CONTROL
 
 	{numcc == 21 && chancc == 5} {
-			algorithm = floor((valcc/127)*14);
+			algorithm = floor((valcc/127)*15);
 		('algorithm: ').post; algorithm.postln;
 	}
 
