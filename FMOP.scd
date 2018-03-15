@@ -73,27 +73,26 @@ SynthDef(\sinpk, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.001
 	var freq4 = freq*(ratio4+coarse4*aF);
 
 	w = SinOsc.ar(freq4,0,1);
-	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
-	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w = Select.ar(wave4 > 0, [w, Pulse.ar(freq4)]);
+	w = Select.ar(wave4 > 1, [w, Saw.ar(freq4)]);
 	w= (mix4/10)*w;
 	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
 
 	z = SinOsc.ar(freq3,w,1);
-	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, w, 0.5,1)]);
-	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, w, 1)]);
+	z = Select.ar(wave3 > 0, [z, Pulse.ar(freq3, 0.5, w+1)]);
+	z = Select.ar(wave3 > 1, [z, Saw.ar(freq3, w+1)]);
 	z = (mix3/10)*z;
 	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
 
 	y = SinOsc.ar(freq2,z,1);
-	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, z, 0.5,1)]);
-	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, z, 1)]);
+	y = Select.ar(wave2 > 0, [y, Pulse.ar(freq2, 0.5, z+1)]);
+	y = Select.ar(wave2 > 1, [y, Saw.ar(freq2, z+1)]);
 	y = (mix2/10)*y;
 	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
 
-
 	x = SinOsc.ar(freq1,y,1);
-	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, y, 0.5, 1)]);
-	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, y, 1)]);
+	x = Select.ar(wave1 > 0, [x, Pulse.ar(freq1, 0.5, y+1)]);
+	x = Select.ar(wave1 > 1, [x, Saw.ar(freq1, y+1)]);
 	x = (mix1/10)*x;
 	x = x + (aF*PinkNoise.ar(noise/10));
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
@@ -120,27 +119,26 @@ SynthDef(\sinpk2, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.00
 	var freq4 = freq*(ratio4+coarse4*aF);
 
 	w = SinOsc.ar(freq4,0,1);
-	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
-	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w = Select.ar(wave4 > 0, [w, Pulse.ar(freq4)]);
+	w = Select.ar(wave4 > 1, [w, Saw.ar(freq4)]);
 	w= (mix4/10)*w;
 	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
 
 	z = SinOsc.ar(freq3,0,1);
-	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, 0, 0.5,1)]);
-	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, 0, 1)]);
+	z = Select.ar(wave3 > 0, [z, Pulse.ar(freq3)]);
+	z = Select.ar(wave3 > 1, [z, Saw.ar(freq3)]);
 	z = (mix3/10)*z;
 	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
 
 	y = SinOsc.ar(freq2,0,1);
-	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, 0, 0.5,1)]);
-	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, 0, 1)]);
+	y = Select.ar(wave2 > 0, [y, Pulse.ar(freq2)]);
+	y = Select.ar(wave2 > 1, [y, Saw.ar(freq2)]);
 	y = (mix2/10)*y;
 	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
 
-
 	x = SinOsc.ar(freq1,0,1);
-	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, 0, 0.5, 1)]);
-	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, 0, 1)]);
+	x = Select.ar(wave1 > 0, [x, Pulse.ar(freq1)]);
+	x = Select.ar(wave1 > 1, [x, Saw.ar(freq1)]);
 	x = (mix1/10)*x;
 	x = x + (aF*PinkNoise.ar(noise/10));
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
@@ -170,27 +168,27 @@ SynthDef(\sinpk3, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.00
 	var freq4 = freq*(ratio4+coarse4*aF);
 
 	w = SinOsc.ar(freq4,0,1);
-	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
-	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w = Select.ar(wave4 > 0, [w, Pulse.ar(freq4)]);
+	w = Select.ar(wave4 > 1, [w, Saw.ar(freq4)]);
 	w= (mix4/10)*w;
 	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
 
 	z = SinOsc.ar(freq3,w,1);
-	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, w, 0.5,1)]);
-	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, w, 1)]);
+	z = Select.ar(wave3 > 0, [z, Pulse.ar(freq3, 0.5, w+1)]);
+	z = Select.ar(wave3 > 1, [z, Saw.ar(freq3, w+1)]);
 	z = (mix3/10)*z;
 	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
 
 	y = SinOsc.ar(freq2,0,1);
-	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, 0, 0.5,1)]);
-	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, 0, 1)]);
+	y = Select.ar(wave2 > 0, [y, Pulse.ar(freq2)]);
+	y = Select.ar(wave2 > 1, [y, Saw.ar(freq2)]);
 	y = (mix2/10)*y;
 	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
 
 
 	x = SinOsc.ar(freq1,y,1);
-	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, y, 0.5, 1)]);
-	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, y, 1)]);
+	x = Select.ar(wave1 > 0, [x, Pulse.ar(freq1, 0.5, y+1)]);
+	x = Select.ar(wave1 > 1, [x, Saw.ar(freq1, y+1)]);
 	x = (mix1/10)*x;
 	x = x + (aF*PinkNoise.ar(noise/10));
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
@@ -220,27 +218,27 @@ SynthDef(\sinpk4, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.00
 	var freq4 = freq*(ratio4+coarse4*aF);
 
 	w = SinOsc.ar(freq4,0,1);
-	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
-	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w = Select.ar(wave4 > 0, [w, Pulse.ar(freq4)]);
+	w = Select.ar(wave4 > 1, [w, Saw.ar(freq4)]);
 	w= (mix4/10)*w;
 	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
 
 	z = SinOsc.ar(freq3,0,1);
-	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, 0, 0.5,1)]);
-	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, 0, 1)]);
+	z = Select.ar(wave3 > 0, [z, Pulse.ar(freq3)]);
+	z = Select.ar(wave3 > 1, [z, Saw.ar(freq3)]);
 	z = (mix3/10)*z;
 	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
 
 	y = SinOsc.ar(freq2,0,1);
-	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, 0, 0.5,1)]);
-	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, 0, 1)]);
+	y = Select.ar(wave2 > 0, [y, Pulse.ar(freq2)]);
+	y = Select.ar(wave2 > 1, [y, Saw.ar(freq2)]);
 	y = (mix2/10)*y;
 	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
 
 
 	x = SinOsc.ar(freq1,y+z+w,1);
-	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, y+z+w, 0.5, 1)]);
-	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, y+z+w, 1)]);
+	x = Select.ar(wave1 > 0, [x, Pulse.ar(freq1, 0.5, y+z+w+1)]);
+	x = Select.ar(wave1 > 1, [x, Saw.ar(freq1, y+z+w+1)]);
 	x = (mix1/10)*x;
 	x = x + (aF*PinkNoise.ar(noise/10));
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
@@ -270,27 +268,27 @@ SynthDef(\sinpk5, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.00
 	var freq4 = freq*(ratio4+coarse4*aF);
 
 	w = SinOsc.ar(freq4,0,1);
-	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
-	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w = Select.ar(wave4 > 0, [w, Pulse.ar(freq4)]);
+	w = Select.ar(wave4 > 1, [w, Saw.ar(freq4)]);
 	w= (mix4/10)*w;
 	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
 
 	z = SinOsc.ar(freq3,w,1);
-	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, w, 0.5,1)]);
-	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, w, 1)]);
+	z = Select.ar(wave3 > 0, [z, Pulse.ar(freq3, 0.5, w+1)]);
+	z = Select.ar(wave3 > 1, [z, Saw.ar(freq3, w+1)]);
 	z = (mix3/10)*z;
 	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
 
 	y = SinOsc.ar(freq2,0,1);
-	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, 0, 0.5,1)]);
-	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, 0, 1)]);
+	y = Select.ar(wave2 > 0, [y, Pulse.ar(freq2)]);
+	y = Select.ar(wave2 > 1, [y, Saw.ar(freq2)]);
 	y = (mix2/10)*y;
 	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
 
 
 	x = SinOsc.ar(freq1,y+z,1);
-	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, y+z, 0.5, 1)]);
-	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, y+z+w, 1)]);
+	x = Select.ar(wave1 > 0, [x, Pulse.ar(freq1, 0.5, y+z+1)]);
+	x = Select.ar(wave1 > 1, [x, Saw.ar(freq1, y+z+1)]);
 	x = (mix1/10)*x;
 	x = x + (aF*PinkNoise.ar(noise/10));
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
@@ -319,27 +317,27 @@ SynthDef(\sinpk6, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.00
 	var freq4 = freq*(ratio4+coarse4*aF);
 
 	w = SinOsc.ar(freq4,0,1);
-	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
-	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w = Select.ar(wave4 > 0, [w, Pulse.ar(freq4)]);
+	w = Select.ar(wave4 > 1, [w, Saw.ar(freq4)]);
 	w= (mix4/10)*w;
 	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
 
 	z = SinOsc.ar(freq3,0,1);
-	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, 0, 0.5,1)]);
-	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, 0, 1)]);
+	z = Select.ar(wave3 > 0, [z, Pulse.ar(freq3)]);
+	z = Select.ar(wave3 > 1, [z, Saw.ar(freq3)]);
 	z = (mix3/10)*z;
 	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
 
 	y = SinOsc.ar(freq2,0,1);
-	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, 0, 0.5,1)]);
-	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, 0, 1)]);
+	y = Select.ar(wave2 > 0, [y, Pulse.ar(freq2)]);
+	y = Select.ar(wave2 > 1, [y, Saw.ar(freq2)]);
 	y = (mix2/10)*y;
 	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
 
 
 	x = SinOsc.ar(freq1,y,1);
-	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, y, 0.5, 1)]);
-	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, y, 1)]);
+	x = Select.ar(wave1 > 0, [x, Pulse.ar(freq1, 0.5, y+1)]);
+	x = Select.ar(wave1 > 1, [x, Saw.ar(freq1, y+1)]);
 	x = (mix1/10)*x;
 	x = x + (aF*PinkNoise.ar(noise/10));
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
@@ -369,27 +367,27 @@ SynthDef(\sinpk7, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.00
 	var freq4 = freq*(ratio4+coarse4*aF);
 
 	w = SinOsc.ar(freq4,0,1);
-	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
-	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w = Select.ar(wave4 > 0, [w, Pulse.ar(freq4)]);
+	w = Select.ar(wave4 > 1, [w, Saw.ar(freq4)]);
 	w= (mix4/10)*w;
 	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
 
 	z = SinOsc.ar(freq3,0,1);
-	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, 0, 0.5,1)]);
-	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, 0, 1)]);
+	z = Select.ar(wave3 > 0, [z, Pulse.ar(freq3)]);
+	z = Select.ar(wave3 > 1, [z, Saw.ar(freq3)]);
 	z = (mix3/10)*z;
 	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
 
 	y = SinOsc.ar(freq2,z + w,1);
-	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, z+w, 0.5,1)]);
-	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, z+w, 1)]);
+	y = Select.ar(wave2 > 0, [y, Pulse.ar(freq2, 0.5, z+w+1)]);
+	y = Select.ar(wave2 > 1, [y, Saw.ar(freq2, z+w+1)]);
 	y = (mix2/10)*y;
 	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
 
 
 	x = SinOsc.ar(freq1,0,1);
-	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, 0, 0.5, 1)]);
-	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, 0, 1)]);
+	x = Select.ar(wave1 > 0, [x, Pulse.ar(freq1)]);
+	x = Select.ar(wave1 > 1, [x, Saw.ar(freq1)]);
 	x = (mix1/10)*x;
 	x = x + (aF*PinkNoise.ar(noise/10));
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
@@ -419,27 +417,27 @@ SynthDef(\sinpk8, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.00
 	var freq4 = freq*(ratio4+coarse4*aF);
 
 	w = SinOsc.ar(freq4,0,1);
-	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
-	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w = Select.ar(wave4 > 0, [w, Pulse.ar(freq4)]);
+	w = Select.ar(wave4 > 1, [w, Saw.ar(freq4)]);
 	w= (mix4/10)*w;
 	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
 
 	z = SinOsc.ar(freq3,0,1);
-	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, 0, 0.5,1)]);
-	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, 0, 1)]);
+	z = Select.ar(wave3 > 0, [z, Pulse.ar(freq3)]);
+	z = Select.ar(wave3 > 1, [z, Saw.ar(freq3)]);
 	z = (mix3/10)*z;
 	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
 
 	y = SinOsc.ar(freq2,z+w,1);
-	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, z+w, 0.5,1)]);
-	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, z+w, 1)]);
+	y = Select.ar(wave2 > 0, [y, Pulse.ar(freq2, 0.5, z+w+1)]);
+	y = Select.ar(wave2 > 1, [y, Saw.ar(freq2, z+w+1)]);
 	y = (mix2/10)*y;
 	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
 
 
 	x = SinOsc.ar(freq1,y,1);
-	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, y, 0.5, 1)]);
-	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, y, 1)]);
+	x = Select.ar(wave1 > 0, [x, Pulse.ar(freq1, 0.5, y+1)]);
+	x = Select.ar(wave1 > 1, [x, Saw.ar(freq1, y+1)]);
 	x = (mix1/10)*x;
 	x = x + (aF*PinkNoise.ar(noise/10));
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
@@ -468,27 +466,27 @@ SynthDef(\sinpk9, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.00
 	var freq4 = freq*(ratio4+coarse4*aF);
 
 	w = SinOsc.ar(freq4,0,1);
-	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
-	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w = Select.ar(wave4 > 0, [w, Pulse.ar(freq4)]);
+	w = Select.ar(wave4 > 1, [w, Saw.ar(freq4)]);
 	w= (mix4/10)*w;
 	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
 
 	z = SinOsc.ar(freq3,0,1);
-	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, 0, 0.5,1)]);
-	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, 0, 1)]);
+	z = Select.ar(wave3 > 0, [z, Pulse.ar(freq3)]);
+	z = Select.ar(wave3 > 1, [z, Saw.ar(freq3)]);
 	z = (mix3/10)*z;
 	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
 
 	y = SinOsc.ar(freq2,z+w,1);
-	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, z+w, 0.5,1)]);
-	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, z+w, 1)]);
+	y = Select.ar(wave2 > 0, [y, Pulse.ar(freq2, 0.5, z+w+1)]);
+	y = Select.ar(wave2 > 1, [y, Saw.ar(freq2, z+w+1)]);
 	y = (mix2/10)*y;
 	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
 
 
 	x = SinOsc.ar(freq1,z+w,1);
-	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, z+w, 0.5, 1)]);
-	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, z+w, 1)]);
+	x = Select.ar(wave1 > 0, [x, Pulse.ar(freq1, 0.5, z+w+1)]);
+	x = Select.ar(wave1 > 1, [x, Saw.ar(freq1, z+w+1)]);
 	x = (mix1/10)*x;
 	x = x + (aF*PinkNoise.ar(noise/10));
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
@@ -518,27 +516,27 @@ SynthDef(\sinpk10, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.0
 	var freq4 = freq*(ratio4+coarse4*aF);
 
 	w = SinOsc.ar(freq4,0,1);
-	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
-	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w = Select.ar(wave4 > 0, [w, Pulse.ar(freq4)]);
+	w = Select.ar(wave4 > 1, [w, Saw.ar(freq4)]);
 	w= (mix4/10)*w;
 	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
 
 	z = SinOsc.ar(freq3,w,1);
-	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, w, 0.5,1)]);
-	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, w, 1)]);
+	z = Select.ar(wave3 > 0, [z, Pulse.ar(freq3, 0.5, w+1)]);
+	z = Select.ar(wave3 > 1, [z, Saw.ar(freq3, w+1)]);
 	z = (mix3/10)*z;
 	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
 
 	y = SinOsc.ar(freq2,w,1);
-	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, w, 0.5,1)]);
-	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, w, 1)]);
+	y = Select.ar(wave2 > 0, [y, Pulse.ar(freq2, 0.5, w+1)]);
+	y = Select.ar(wave2 > 1, [y, Saw.ar(freq2, w+1)]);
 	y = (mix2/10)*y;
 	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
 
 
 	x = SinOsc.ar(freq1,w,1);
-	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, w, 0.5, 1)]);
-	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, w, 1)]);
+	x = Select.ar(wave1 > 0, [x, Pulse.ar(freq1, 0.5, w+1)]);
+	x = Select.ar(wave1 > 1, [x, Saw.ar(freq1, w+1)]);
 	x = (mix1/10)*x;
 	x = x + (aF*PinkNoise.ar(noise/10));
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
@@ -568,27 +566,27 @@ SynthDef(\sinpk11, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.0
 	var freq4 = freq*(ratio4+coarse4*aF);
 
 	w = SinOsc.ar(freq4,0,1);
-	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
-	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w = Select.ar(wave4 > 0, [w, Pulse.ar(freq4)]);
+	w = Select.ar(wave4 > 1, [w, Saw.ar(freq4)]);
 	w= (mix4/10)*w;
 	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
 
 	z = SinOsc.ar(freq3,w,1);
-	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, w, 0.5,1)]);
-	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, w, 1)]);
+	z = Select.ar(wave3 > 0, [z, Pulse.ar(freq3, 0.5, w+1)]);
+	z = Select.ar(wave3 > 1, [z, Saw.ar(freq3, w+1)]);
 	z = (mix3/10)*z;
 	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
 
 	y = SinOsc.ar(freq2,w,1);
-	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, w, 0.5,1)]);
-	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, w, 1)]);
+	y = Select.ar(wave2 > 0, [y, Pulse.ar(freq2, 0.5, w+1)]);
+	y = Select.ar(wave2 > 1, [y, Saw.ar(freq2, w+1)]);
 	y = (mix2/10)*y;
 	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
 
 
 	x = SinOsc.ar(freq1,0,1);
-	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, 0, 0.5, 1)]);
-	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, 0, 1)]);
+	x = Select.ar(wave1 > 0, [x, Pulse.ar(freq1)]);
+	x = Select.ar(wave1 > 1, [x, Saw.ar(freq1)]);
 	x = (mix1/10)*x;
 	x = x + (aF*PinkNoise.ar(noise/10));
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
@@ -618,27 +616,27 @@ SynthDef(\sinpk12, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.0
 	var freq4 = freq*(ratio4+coarse4*aF);
 
 	w = SinOsc.ar(freq4,0,1);
-	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
-	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w = Select.ar(wave4 > 0, [w, Pulse.ar(freq4)]);
+	w = Select.ar(wave4 > 1, [w, Saw.ar(freq4)]);
 	w= (mix4/10)*w;
 	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
 
 	z = SinOsc.ar(freq3,0,1);
-	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, 0, 0.5,1)]);
-	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, 0, 1)]);
+	z = Select.ar(wave3 > 0, [z, Pulse.ar(freq3)]);
+	z = Select.ar(wave3 > 1, [z, Saw.ar(freq3)]);
 	z = (mix3/10)*z;
 	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
 
 	y = SinOsc.ar(freq2,z+w,1);
-	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, z+w, 0.5,1)]);
-	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, z+w, 1)]);
+	y = Select.ar(wave2 > 0, [y, Pulse.ar(freq2, 0.5, z+w+1)]);
+	y = Select.ar(wave2 > 1, [y, Saw.ar(freq2, z+w+1)]);
 	y = (mix2/10)*y;
 	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
 
 
 	x = SinOsc.ar(freq1,z,1);
-	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, z, 0.5, 1)]);
-	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, z, 1)]);
+	x = Select.ar(wave1 > 0, [x, Pulse.ar(freq1, 0.5, z+1)]);
+	x = Select.ar(wave1 > 1, [x, Saw.ar(freq1, z+1)]);
 	x = (mix1/10)*x;
 	x = x + (aF*PinkNoise.ar(noise/10));
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
@@ -668,27 +666,27 @@ SynthDef(\sinpk13, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.0
 	var freq4 = freq*(ratio4+coarse4*aF);
 
 	w = SinOsc.ar(freq4,0,1);
-	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
-	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w = Select.ar(wave4 > 0, [w, Pulse.ar(freq4)]);
+	w = Select.ar(wave4 > 1, [w, Saw.ar(freq4)]);
 	w= (mix4/10)*w;
 	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
 
 	z = SinOsc.ar(freq3,0,1);
-	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, 0, 0.5,1)]);
-	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, 0, 1)]);
+	z = Select.ar(wave3 > 0, [z, Pulse.ar(freq3)]);
+	z = Select.ar(wave3 > 1, [z, Saw.ar(freq3)]);
 	z = (mix3/10)*z;
 	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
 
 	y = SinOsc.ar(freq2,z+w,1);
-	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, z+w, 0.5,1)]);
-	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, z+w, 1)]);
+	y = Select.ar(wave2 > 0, [y, Pulse.ar(freq2, 0.5, z+w+1)]);
+	y = Select.ar(wave2 > 1, [y, Saw.ar(freq2, z+w+1)]);
 	y = (mix2/10)*y;
 	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
 
 
 	x = SinOsc.ar(freq1,0,1);
-	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, 0, 0.5, 1)]);
-	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, 0, 1)]);
+	x = Select.ar(wave1 > 0, [x, Pulse.ar(freq1)]);
+	x = Select.ar(wave1 > 1, [x, Saw.ar(freq1)]);
 	x = (mix1/10)*x;
 	x = x + (aF*PinkNoise.ar(noise/10));
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
@@ -718,27 +716,27 @@ SynthDef(\sinpk14, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.0
 	var freq4 = freq*(ratio4+coarse4*aF);
 
 	w = SinOsc.ar(freq4,0,1);
-	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
-	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w = Select.ar(wave4 > 0, [w, Pulse.ar(freq4)]);
+	w = Select.ar(wave4 > 1, [w, Saw.ar(freq4)]);
 	w= (mix4/10)*w;
 	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
 
 	z = SinOsc.ar(freq3,w,1);
-	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, w, 0.5,1)]);
-	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, w, 1)]);
+	z = Select.ar(wave3 > 0, [z, Pulse.ar(freq3, 0.5, w+1)]);
+	z = Select.ar(wave3 > 1, [z, Saw.ar(freq3, w+1)]);
 	z = (mix3/10)*z;
 	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
 
 	y = SinOsc.ar(freq2,w,1);
-	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, w, 0.5,1)]);
-	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, w, 1)]);
+	y = Select.ar(wave2 > 0, [y, Pulse.ar(freq2, 0.5, w+1)]);
+	y = Select.ar(wave2 > 1, [y, Saw.ar(freq2, w+1)]);
 	y = (mix2/10)*y;
 	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
 
 
 	x = SinOsc.ar(freq1,y+z,1);
-	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, y+z, 0.5, 1)]);
-	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, y+z, 1)]);
+	x = Select.ar(wave1 > 0, [x, Pulse.ar(freq1, 0.5, y+z+1)]);
+	x = Select.ar(wave1 > 1, [x, Saw.ar(freq1, y+z+1)]);
 	x = (mix1/10)*x;
 	x = x + (aF*PinkNoise.ar(noise/10));
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
@@ -767,27 +765,27 @@ SynthDef(\sinpk15, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.0
 	var freq4 = freq*(ratio4+coarse4*aF);
 
 	w = SinOsc.ar(freq4,0,1);
-	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
-	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w = Select.ar(wave4 > 0, [w, Pulse.ar(freq4)]);
+	w = Select.ar(wave4 > 1, [w, Saw.ar(freq4)]);
 	w= (mix4/10)*w;
 	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
 
 	z = SinOsc.ar(freq3,w,1);
-	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, w, 0.5,1)]);
-	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, w, 1)]);
+	z = Select.ar(wave3 > 0, [z, Pulse.ar(freq3, 0.5, w+1)]);
+	z = Select.ar(wave3 > 1, [z, Saw.ar(freq3, w+1)]);
 	z = (mix3/10)*z;
 	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
 
 	y = SinOsc.ar(freq2,w,1);
-	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, w, 0.5,1)]);
-	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, w, 1)]);
+	y = Select.ar(wave2 > 0, [y, Pulse.ar(freq2, 0.5, w+1)]);
+	y = Select.ar(wave2 > 1, [y, Saw.ar(freq2, w+1)]);
 	y = (mix2/10)*y;
 	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
 
 
 	x = SinOsc.ar(freq1,y,1);
-	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, y, 0.5, 1)]);
-	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, y, 1)]);
+	x = Select.ar(wave1 > 0, [x, Pulse.ar(freq1, 0.5, y+1)]);
+	x = Select.ar(wave1 > 1, [x, Saw.ar(freq1, y+1)]);
 	x = (mix1/10)*x;
 	x = x + (aF*PinkNoise.ar(noise/10));
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
@@ -817,27 +815,27 @@ SynthDef(\sinpk16, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.0
 	var freq4 = freq*(ratio4+coarse4*aF);
 
 	w = SinOsc.ar(freq4,0,1);
-	w = Select.ar(wave4 > 0, [w, LFPulse.ar(freq4, 0, 0.5,1)]);
-	w = Select.ar(wave4 > 1, [w, LFSaw.ar(freq4, 0, 1)]);
+	w = Select.ar(wave4 > 0, [w, Pulse.ar(freq4)]);
+	w = Select.ar(wave4 > 1, [w, Saw.ar(freq4)]);
 	w= (mix4/10)*w;
 	w= EnvGen.kr(env4, gate, doneAction: 0) * w;
 
 	z = SinOsc.ar(freq3,w,1);
-	z = Select.ar(wave3 > 0, [z, LFPulse.ar(freq3, w, 0.5,1)]);
-	z = Select.ar(wave3 > 1, [z, LFSaw.ar(freq3, w, 1)]);
+	z = Select.ar(wave3 > 0, [z, Pulse.ar(freq3, 0.5, w+1)]);
+	z = Select.ar(wave3 > 1, [z, Saw.ar(freq3, w+1)]);
 	z = (mix3/10)*z;
 	z = EnvGen.kr(env3, gate, doneAction: 0) * z;
 
 	y = SinOsc.ar(freq2,z,1);
-	y = Select.ar(wave2 > 0, [y, LFPulse.ar(freq2, z, 0.5,1)]);
-	y = Select.ar(wave2 > 1, [y, LFSaw.ar(freq2, z, 1)]);
+	y = Select.ar(wave2 > 0, [y, Pulse.ar(freq2, 0.5, z+1)]);
+	y = Select.ar(wave2 > 1, [y, Saw.ar(freq2, z+1)]);
 	y = (mix2/10)*y;
 	y = EnvGen.kr(env2, gate, doneAction: 0) * y;
 
 
 	x = SinOsc.ar(freq1,y+w,1);
-	x = Select.ar(wave1 > 0, [x, LFPulse.ar(freq1, y+w, 0.5, 1)]);
-	x = Select.ar(wave1 > 1, [x, LFSaw.ar(freq1, y+w, 1)]);
+	x = Select.ar(wave1 > 0, [x, Pulse.ar(freq1, 0.5, y+w+1)]);
+	x = Select.ar(wave1 > 1, [x, Saw.ar(freq1, y+w+1)]);
 	x = (mix1/10)*x;
 	x = x + (aF*PinkNoise.ar(noise/10));
     x = EnvGen.kr(env1, gate, doneAction: 2) * x;
