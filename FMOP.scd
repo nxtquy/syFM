@@ -1,35 +1,41 @@
-//Play sin osc with Midi
-//Quy Chau, 1/27/18
-//FM synth definable by MIDI parameters
-//Credit to https://carlcolglazier.com/notes/acoustics/midi-instrument-control-supercollider/ for MIDI/synth setup
+// Play sin osc with Midi
+// Quy Chau, 1/27/18
+// FM synth definable by MIDI parameters
+// Credit for MIDI/synth setup to https://carlcolglazier.com/notes/acoustics/midi-instrument-control-supercollider/
+// Credit for effects to https://github.com/mcfilib/modfm-synth
 
 
-//boot server
+// Run this to boot server
 (
 s.boot;
 s.options.sampleRate= 48000;
 )
 
-//Connect all MIDI inputs
+// Run this to connect all MIDI inputs
 (
 MIDIClient.init;
 MIDIIn.connectAll;
 )
 
+/////////////////////////////////////////////////////////////////////////////////////
+//-----------------------------FM SYNTHESIZER ------------------------------//
+/////////////////////////////////////////////////////////////////////////////////////
 
-
+// Run this to initiate synthesizer
 (
-var ratio1 = 1, coarse1 = 0, peakLevel1 = 1, mix1=5, delay1 = 0.001, attack1=0.01, decay1 = 0.3, sustain1=0.5, release1=0.5;
-var ratio2 = 1, coarse2 = 0, peakLevel2 = 1, mix2=5, delay2 = 0.001, attack2=0.01, decay2 = 0.3, sustain2=0.5, release2=0.5;
-var ratio3 = 1, coarse3 = 0, peakLevel3 = 1, mix3 = 5, delay3 = 0.001, attack3 = 0.01, decay3 = 0.3, sustain3 = 0.5, release3 = 0.5;
-var ratio4 = 1, coarse4 = 0, peakLevel4 = 1, mix4 = 5, delay4 = 0.001, attack4 = 0.01, decay4 = 0.3, sustain4 = 0.5, release4 = 0.5;
+
+// Initialize all synthesizer parameters to default patch (basic electric piano)
+var ratio1 = 1, coarse1 = 0, peakLevel1 = 0.5, mix1=5, delay1 = 0.001, attack1=0.01, decay1 = 0.3, sustain1=0.5, release1=0.5;
+var ratio2 = 1, coarse2 = 0, peakLevel2 = 0.5, mix2=5, delay2 = 0.001, attack2=0.01, decay2 = 0.3, sustain2=0.5, release2=0.5;
+var ratio3 = 1, coarse3 = 0, peakLevel3 = 0.5, mix3 = 5, delay3 = 0.001, attack3 = 0.01, decay3 = 0.3, sustain3 = 0.5, release3 = 0.5;
+var ratio4 = 1, coarse4 = 0, peakLevel4 = 0.5, mix4 = 5, delay4 = 0.001, attack4 = 0.01, decay4 = 0.3, sustain4 = 0.5, release4 = 0.5;
 var noise = 0, wave1 = 0, wave2 = 0, wave3 = 0, wave4 = 0, analogFac = 0;
 
 var algorithm = 0;
 var filterFreq = 10000, filterRes = 1, fdelay = 0.001, fattack = 0.01, fdecay = 0.3, fsustain = 1, frelease = 0.2;
 var hpFreq = 20, hpRes = 1;
 var master = 0.5;
-var lfoRate = 0.5, lfoAmount = 0;
+var lfoRate = 0.5, lfoAmount = 0, lfoShape = 0, lfoDuty = 0.5;
 var dwet = 0, ddec = 0.01, ddel = 0.001;
 var rdec = 2, rdel = 0.048, rwet = 0;
 
@@ -46,8 +52,11 @@ var ccs;
 //-----------------------------SYNTH DEFINITION ------------------------------//
 
 //Define Synth to be played (4 oscillators)
+//much credit to https://carlcolglazier.com/notes/acoustics/midi-instrument-control-supercollider/
 
-//https://carlcolglazier.com/notes/acoustics/midi-instrument-control-supercollider/
+  /////////////////////////////////
+ //       FM ALGORITHMS         //
+/////////////////////////////////
 
 //Algorithm 1
 SynthDef(\sinpk, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.001, attack1 = 0.01, decay1 = 0.3, sustain1 = 0.5, release1 = 0.5, peakLevel1 = 1, curve1 = 0, bias1 = 0, mix2 = 5, delay2 = 0.001, attack2 = 0.01, decay2 = 3, sustain2 = 0.5, release2 = 0.5, peakLevel2 = 1, curve2 = 0, bias2 = 0, mix3 = 5, delay3 = 0.001, attack3 = 0.01, decay3 = 0.3, sustain3 = 0.5, release3 = 0.5, peakLevel3 = 1, curve3 = 0, bias3 = 0, mix4 = 5, delay4 = 0.001, attack4 = 0.01, decay4 = 0.3, sustain4 = 0.5, release4 = 0.5, peakLevel4 = 1, curve4 = 0, bias4 = 0, wave1 = 0, wave2 = 0, wave3 = 0, wave4 = 0, ratio2 = 1, coarse2 = 0, ratio1 = 1, coarse1 = 0, ratio3 = 1, coarse3 = 0, ratio4 = 1, coarse4 = 0, noise = 0, aF = 1;
@@ -842,17 +851,30 @@ SynthDef(\sinpk16, { arg freq = 440, gate = 1, vel = 100, mix1 = 5, delay1 = 0.0
 
 }).add;
 
+
+// Effects credit to https://github.com/mcfilib/modfm-synth
+
   /////////////////////////////////
  //       LOWPASS FILTER        //
 /////////////////////////////////
 
-SynthDef(\lowpass, {arg freq = 10000, amount = 0, rate = 5, res = 1, gate = 1, delay = 0.001, attack = 0.01, decay = 0.3, sustain = 1, release = 0.2;
-	var input, effect, sine, env, cut;
+SynthDef(\lowpass, {arg t_reset = 0, lfoShape = 0, lfoDuty = 0.5, freq = 10000, amount = 0, rate = 5, res = 1, gate = 1, delay = 0.001, attack = 0.01, decay = 0.3, sustain = 1, release = 0.2;
+	var input, effect, sine, amp, dc, env, cut, lagFactor, lagFactor2, lfoPhase;
 
-	sine = SinOsc.kr(rate,0,log10(freq/2)*0.35*0.5*amount,(1-(log10(freq/2)*0.35*0.5*amount))); // LFO
-	cut = sine*freq;
-	cut = Clip.kr(cut, 20, 20000);
-	//cut = Lag.kr(cut,0.2); // Apply LFO and smooth
+	amp = 0.5*amount;
+	dc= 0.5;
+
+	//lfoPhase = Sweep.kr(t_reset, 2pi * rate).wrap(-pi, pi); // for reset sine LFO phase
+	//sine = SinOsc.kr(0, lfoPhase, amp, dc); // keyboard reset LFO
+
+	sine = SinOsc.kr(rate, 0, amp, dc); //free-running LFO
+	sine = Select.kr(lfoShape> 0, [sine, (amp*0.5*Pulse.kr(rate, lfoDuty, 2, -1)  + dc) ]);
+	sine = Select.kr(lfoShape > 1, [sine, VarSaw.kr(rate, 0, lfoDuty, amp, dc)]);
+	sine = Select.kr(lfoShape > 2, [sine, VarSaw.kr(rate, 0, lfoDuty, -1*amp, dc)]);
+
+	cut = sine*1.9*freq;
+	cut = Clip.kr(cut, 20, 20000); // Clip
+	cut = Lag.kr(cut,0.2); // Smooth
 
 	input = In.ar(0,1);
 	effect = LPF.ar(input, cut); //Low pass filter
@@ -874,11 +896,9 @@ SynthDef(\lowpass, {arg freq = 10000, amount = 0, rate = 5, res = 1, gate = 1, d
 SynthDef(\highpass, {arg freq = 20, amount = 0, rate = 5, res = 1, gate = 1, delay = 0.001, attack = 0.01, decay = 0.3, sustain = 1, release = 0.2;
 	var input, effect, sine, env, cut;
 
-	//sine = SinOsc.kr(rate,0,log10(freq/2)*0.35*0.5*amount,(1-(log10(freq/2)*0.35*0.5*amount))); // LFO
-	//cut = sine*freq;
 	cut = freq;
 	cut = Clip.kr(cut, 20, 20000);
-	//cut = Lag.kr(cut,0.2); // Apply LFO and smooth
+	cut = Lag.kr(cut,0.2); // Smooth
 
 	input = In.ar(0,1);
 	effect = HPF.ar(input, cut); //Low pass filter
@@ -962,8 +982,9 @@ SynthDef(\limiter, {arg master = 0.5;
 
 
 
-
 //-----------------------------------------------------------------------------//
+
+
 
 
 
@@ -971,7 +992,7 @@ SynthDef(\limiter, {arg master = 0.5;
 //-----------------------------MIDI PARSING ------------------------------//
 
 
-// https://gist.github.com/umbrellaprocess/973d2aa16e95bf329ee2
+// credit to https://gist.github.com/umbrellaprocess/973d2aa16e95bf329ee2
 
 keys = Array.newClear(128);
 ccs = Array.newClear(128);
@@ -985,6 +1006,10 @@ de = Synth.tail(g, \delay);
 re = Synth.tail(g, \reverb);
 li = Synth.tail(g, \limiter);
 
+
+  /////////////////////////////////
+ //       NOTE ON         //
+/////////////////////////////////
 ~noteOnFunc = {arg val, num, chan, src;
 	var node;
 	node = keys.at(num);
@@ -1017,14 +1042,16 @@ li = Synth.tail(g, \limiter);
 
 	node = Synth.head(g,synthN, [\freq, num.midicps, \vel, val, \ratio1, ratio1, \coarse1, coarse1, \ratio2, ratio2, \coarse2, coarse2, \ratio3, ratio3, \coarse3, coarse3, \ratio4, ratio4, \coarse4, coarse4, \mix1, mix1, \peakLevel1, peakLevel1, \delay1, delay1, \attack1, attack1, \decay1, decay1, \sustain1, sustain1, \release1, release1, \mix2, mix2, \peakLevel2, peakLevel2, \delay2, delay2, \attack2, attack2, \decay2, decay2, \sustain2, sustain2, \release2, release2, \mix3, mix3, \peakLevel3, peakLevel3, \delay3, delay3, \attack3, attack3, \decay3, decay3, \sustain3, sustain3, \release3, release3, \mix4, mix4, \peakLevel4, peakLevel4, \delay4, delay4, \attack4, attack4, \decay4, decay4, \sustain4, sustain4, \release4, release4, \wave1, wave1, \wave2, wave2, \wave3, wave3, \wave4, wave4, \noise, noise, \aF, aF]);
 
+	//lp.set('\t_reset', 1);
 
 	keys.put(num, node);
 
 };
 MIDIdef.noteOn(\on, ~noteOnFunc);
 
-
-//MIDI CC to change notesynth parameters live
+  /////////////////////////////////
+ //       MIDI CC         //
+/////////////////////////////////
 ~ccOnFunc = {arg valcc, numcc, chancc, srccc;
 
 	case
@@ -1412,7 +1439,7 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 	}
 
 	{numcc == 25 && chancc == 4} {
-		peakLevel1 = 10*(valcc/127);
+		peakLevel1 = (valcc/127);
 		for (0, 127, {arg i;
 			keys[i].set(\peakLevel1, peakLevel1);
 		}
@@ -1421,7 +1448,7 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 	}
 
 	{numcc == 26 && chancc == 4} {
-		peakLevel2 = 10*(valcc/127);
+		peakLevel2 = (valcc/127);
 		for (0, 127, {arg i;
 			keys[i].set(\peakLevel2, peakLevel2);
 		}
@@ -1430,7 +1457,7 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 	}
 
 	{numcc == 27 && chancc == 4} {
-		peakLevel3 = 10*(valcc/127);
+		peakLevel3 = (valcc/127);
 		for (0, 127, {arg i;
 			keys[i].set(\peakLevel3, peakLevel3);
 		}
@@ -1439,7 +1466,7 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 	}
 
 	{numcc == 28 && chancc == 4} {
-		peakLevel4 = 10*(valcc/127);
+		peakLevel4 = (valcc/127);
 		for (0, 127, {arg i;
 			keys[i].set(\peakLevel4, peakLevel4);
 		}
@@ -1493,7 +1520,7 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 		('hpFreq: ').post; hpFreq.postln;
 	}
 
-	{numcc == 26 && chancc == 5} {
+/*	{numcc == 26 && chancc == 5} {
 		valcc = 127 - valcc;
 		case
 		{valcc < 42} {hpRes = 0.05*valcc/42+0.05}
@@ -1501,6 +1528,16 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 		{valcc < 128} {hpRes = 0*((valcc-99)/28)+1};
 		hp.set(\res, hpRes);
 		('hpRes: ').post; hpRes.postln;
+	}*/
+
+	{numcc == 26 && chancc == 5} {
+		lfoShape = floor(valcc/32);
+		lfoDuty = mod(valcc, 32)/31;
+
+		lp.set(\lfoShape, lfoShape);
+		lp.set(\lfoDuty, lfoDuty);
+		('lfoShape: ').post; lfoShape.postln;
+		('lfoDuty: ').post; lfoDuty.postln;
 	}
 
 
@@ -1659,7 +1696,9 @@ MIDIdef.cc(\ccOn, ~ccOnFunc);
 //-----------------------------------------------------------------------------//
 
 
-
+/////////////////////////////////////////////////////////////////////////////////////
+//-----------------------------END ------------------------------//
+/////////////////////////////////////////////////////////////////////////////////////
 
 
 
