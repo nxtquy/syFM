@@ -48,6 +48,8 @@ var lp, hp, de, li, re;
 var synthN = \sinpk;
 var keys;
 var ccs;
+var pedal = 0;
+var keysPedal;
 
 //-----------------------------SYNTH DEFINITION ------------------------------//
 
@@ -972,7 +974,7 @@ SynthDef(\limiter, {arg master = 0.5;
   input = In.ar(0,1); //get first channel on bus 0
   // Note the exclamation mark followed by 2 makes
   // the the final output stereo
-  effect = Limiter.ar((master*input), 0.9, 0.01 ! 2); // Apply gain
+  effect = Limiter.ar((1*master*input), 0.9, 0.01 ! 2); // Apply gain
 
   ReplaceOut.ar(0,effect); // Replace output
 }).add;
@@ -985,14 +987,13 @@ SynthDef(\limiter, {arg master = 0.5;
 
 
 
-
-
 //-----------------------------MIDI PARSING ------------------------------//
 
 
 // credit to https://gist.github.com/umbrellaprocess/973d2aa16e95bf329ee2
 
 keys = Array.newClear(128);
+keysPedal = Array.newClear(128);
 ccs = Array.newClear(128);
 
 
@@ -1010,11 +1011,14 @@ li = Synth.tail(g, \limiter);
 /////////////////////////////////
 ~noteOnFunc = {arg val, num, chan, src;
 	var node;
+
 	node = keys.at(num);
 	if (node.notNil, {
 		node.release;
 		keys.put(num, nil);
+		keysPedal.put(num, nil);
 	});
+
 	aF = 1-(analogFac*0.01*((1.0.sum3rand)-0.5));
 	//('note analog factor: ').post;aF.postln;
 
@@ -1035,12 +1039,9 @@ li = Synth.tail(g, \limiter);
 	{algorithm == 13} {synthN = \sinpk14}
 	{algorithm == 14} {synthN = \sinpk15}
 	{algorithm == 15} {synthN = \sinpk16}
-
 	;
 
 	node = Synth.head(g,synthN, [\freq, num.midicps, \vel, val, \ratio1, ratio1, \coarse1, coarse1, \ratio2, ratio2, \coarse2, coarse2, \ratio3, ratio3, \coarse3, coarse3, \ratio4, ratio4, \coarse4, coarse4, \mix1, mix1, \peakLevel1, peakLevel1, \delay1, delay1, \attack1, attack1, \decay1, decay1, \sustain1, sustain1, \release1, release1, \mix2, mix2, \peakLevel2, peakLevel2, \delay2, delay2, \attack2, attack2, \decay2, decay2, \sustain2, sustain2, \release2, release2, \mix3, mix3, \peakLevel3, peakLevel3, \delay3, delay3, \attack3, attack3, \decay3, decay3, \sustain3, sustain3, \release3, release3, \mix4, mix4, \peakLevel4, peakLevel4, \delay4, delay4, \attack4, attack4, \decay4, decay4, \sustain4, sustain4, \release4, release4, \wave1, wave1, \wave2, wave2, \wave3, wave3, \wave4, wave4, \noise, noise, \aF, aF]);
-
-	//lp.set('\t_reset', 1);
 
 	keys.put(num, node);
 
@@ -1051,6 +1052,31 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
  //       MIDI CC         //
 /////////////////////////////////
 ~ccOnFunc = {arg valcc, numcc, chancc, srccc;
+
+	var node, node2;
+	if (numcc == 64, {
+		if (valcc > 63,
+			{pedal = 1},
+			{pedal = 0}
+		);
+	});
+
+	if (pedal == 1,
+		{},
+		{
+			for (0, size(keysPedal), {arg i;
+				node = keys.at(i);
+				node2 = keysPedal.at(i);
+				if (node2.notNil, {
+					node.release;
+					keys.put(i, nil);
+					node2.release;
+					keysPedal.put(i, nil);
+				});
+			});
+		}
+	);
+
 
 	case
 
@@ -1477,7 +1503,7 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 
 	{numcc == 21 && chancc == 5} {
 			algorithm = floor((valcc/127)*15);
-		('algorithm: ').post; algorithm.postln;
+		('algorithm: ').post; (algorithm+1).postln;
 	}
 
 
@@ -1664,28 +1690,28 @@ MIDIdef.noteOn(\on, ~noteOnFunc);
 
 //Release note will release synth node
 ~noteOffFunc = {arg val, num, chan, src;
-	var node;
-	node = keys.at(num);
-	if (node.notNil, {
-		node.release;
-		keys.put(num, nil);
-	});
+	var node, bool;
 
+	node = keys.at(num);
+	if (pedal == 0,
+		{
+			if (node.notNil, {
+				node.release;
+				keys.put(num, nil);
+				keysPedal.put(num, nil);
+			});
+
+		},
+		{
+			if (node.notNil, {
+				keysPedal.put(num, 1)
+			});
+
+		}
+		);
 };
 
 MIDIdef.noteOff(\off, ~noteOffFunc);
-
-/*~ccOnFunc = {arg val, num, chan, src;
-	var node;
-	node = ccs.at(num);
-	if (node.notNil, {
-		node.release;
-		ccs.put(num,nil);
-	});
-
-	ccs.put(num, node);
-	[src,chan, num, val].postln;
-};*/
 
 MIDIdef.cc(\ccOn, ~ccOnFunc);
 
